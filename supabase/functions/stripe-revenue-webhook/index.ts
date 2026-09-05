@@ -78,6 +78,37 @@ async function sha256Hex(value: string): Promise<string> {
   return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+function stringId(value: any): string | null {
+  return typeof value === "string" && value ? value : value && typeof value.id === "string" ? value.id : null;
+}
+
+function subscriptionIdFromInvoice(invoice: any): string | null {
+  return stringId(invoice.subscription)
+    ?? stringId(invoice.parent?.subscription_details?.subscription)
+    ?? stringId(invoice.lines?.data?.[0]?.subscription);
+}
+
+function priceFromLine(line: any): any {
+  return line?.price ?? line?.pricing?.price_details?.price ?? line?.pricing?.price_details ?? null;
+}
+
+function softwareIdentityFromInvoice(invoice: any): { sku: string; tier: string; periodEnd: string | null } | null {
+  for (const line of invoice?.lines?.data ?? []) {
+    const price = priceFromLine(line);
+    const metadata = price?.metadata ?? line?.metadata ?? {};
+    const sku = String(metadata.nebula_sku ?? "").trim();
+    if (!sku) continue;
+    const tier = String(metadata.nebula_tier ?? "basic").trim() || "basic";
+    const periodEnd = Number(line?.period?.end);
+    return {
+      sku,
+      tier,
+      periodEnd: Number.isFinite(periodEnd) ? new Date(periodEnd * 1000).toISOString() : null,
+    };
+  }
+  return null;
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method !== "POST") return json(405, { error: "method_not_allowed" });
 
@@ -109,84 +140,162 @@ Deno.serve(async (req: Request) => {
   }
 
   if (event?.livemode !== true) return json(200, { received: true, status: "non_live_ignored" });
-  if (!new Set(["checkout.session.completed", "checkout.session.async_payment_succeeded"]).has(event?.type)) {
-    return json(200, { received: true, status: "event_ignored" });
-  }
 
-  const session = event?.data?.object ?? {};
-  if (session.payment_status !== "paid") return json(200, { received: true, status: "unpaid_ignored" });
-  if (typeof event.id !== "string" || !event.id || typeof session.id !== "string" || !session.id) {
-    return json(400, { error: "missing_provider_identity" });
-  }
+  const eventType = String(event?.type ?? "");
+  const eventObject = event?.data?.object ?? {};
 
-  const metadata = session.metadata ?? {};
-  const offer = String(metadata.offer ?? "").trim();
-  const sku = String(metadata.sku ?? metadata.product_id ?? "").trim();
-  const offerId = offer || sku || "unknown";
-  const kind = SERVICE_OFFERS.has(offer) ? "service" : DIGITAL_OFFERS.has(sku) ? "digital" : "unknown";
-  const fulfillmentStatus = kind === "service"
-    ? "intake_required"
-    : kind === "digital"
-      ? "pending_configuration"
-      : "pending_review";
-
-  const email = String(session.customer_details?.email ?? session.customer_email ?? "").trim().toLowerCase();
-  const emailHash = email ? await sha256Hex(email) : null;
-
-  const safeMetadata: Record<string, unknown> = {};
-  for (const key of [
-    "offer",
-    "sku",
-    "product_id",
-    "revenue_stream",
-    "catalog",
-    "mode",
-    "payment_stage",
-    "business_unit",
-  ]) {
-    if (metadata[key] != null) safeMetadata[key] = metadata[key];
-  }
-
-  const intakePayload: Record<string, unknown> = {};
-  if (kind === "service" && Array.isArray(session.custom_fields)) {
-    for (const field of session.custom_fields) {
-      const value = field?.text?.value ?? field?.numeric?.value ?? field?.dropdown?.value;
-      if (typeof field?.key === "string" && field.key && value != null) intakePayload[field.key] = value;
+  if (new Set(["checkout.session.completed", "checkout.session.async_payment_succeeded"]).has(eventType)) {
+    const session = eventObject;
+    if (session.payment_status !== "paid") return json(200, { received: true, status: "unpaid_ignored" });
+    if (typeof event.id !== "string" || !event.id || typeof session.id !== "string" || !session.id) {
+      return json(400, { error: "missing_provider_identity" });
     }
+
+    const metadata = session.metadata ?? {};
+    const offer = String(metadata.offer ?? "").trim();
+    const sku = String(metadata.sku ?? metadata.product_id ?? "").trim();
+    const offerId = offer || sku || "unknown";
+    const kind = SERVICE_OFFERS.has(offer) ? "service" : DIGITAL_OFFERS.has(sku) ? "digital" : "unknown";
+    const fulfillmentStatus = kind === "service"
+      ? "intake_required"
+      : kind === "digital"
+        ? "delivery_ready"
+        : "pending_review";
+
+    const email = String(session.customer_details?.email ?? session.customer_email ?? "").trim().toLowerCase();
+    const emailHash = email ? await sha256Hex(email) : null;
+
+    const safeMetadata: Record<string, unknown> = {};
+    for (const key of [
+      "offer",
+      "sku",
+      "product_id",
+      "revenue_stream",
+      "catalog",
+      "mode",
+      "payment_stage",
+      "business_unit",
+    ]) {
+      if (metadata[key] != null) safeMetadata[key] = metadata[key];
+    }
+
+    const intakePayload: Record<string, unknown> = {};
+    if (kind === "service" && Array.isArray(session.custom_fields)) {
+      for (const field of session.custom_fields) {
+        const value = field?.text?.value ?? field?.numeric?.value ?? field?.dropdown?.value;
+        if (typeof field?.key === "string" && field.key && value != null) intakePayload[field.key] = value;
+      }
+    }
+
+    const amountTotal = Number.isSafeInteger(session.amount_total) && session.amount_total >= 0
+      ? session.amount_total
+      : null;
+    const currency = typeof session.currency === "string" && /^[a-z]{3}$/i.test(session.currency)
+      ? session.currency.toLowerCase()
+      : null;
+
+    const { data: recorded, error: recordError } = await admin.rpc("record_revenue_checkout", {
+      p_provider: "stripe",
+      p_provider_event_id: event.id,
+      p_provider_source_id: session.id,
+      p_offer_id: offerId,
+      p_offer_kind: kind,
+      p_amount_total: amountTotal,
+      p_currency: currency,
+      p_payment_status: "paid",
+      p_fulfillment_status: fulfillmentStatus,
+      p_customer_email_hash: emailHash,
+      p_metadata: safeMetadata,
+      p_intake_payload: intakePayload,
+    });
+
+    if (recordError || !Array.isArray(recorded) || recorded.length !== 1) {
+      return json(500, { error: "atomic_revenue_persistence_failed" });
+    }
+
+    const row = recorded[0] as { fulfillment_status?: string; duplicate?: boolean };
+    return json(200, {
+      received: true,
+      verified: true,
+      offer_id: offerId,
+      fulfillment_status: row.fulfillment_status ?? fulfillmentStatus,
+      duplicate: Boolean(row.duplicate),
+    });
   }
 
-  const amountTotal = Number.isSafeInteger(session.amount_total) && session.amount_total >= 0
-    ? session.amount_total
-    : null;
-  const currency = typeof session.currency === "string" && /^[a-z]{3}$/i.test(session.currency)
-    ? session.currency.toLowerCase()
-    : null;
+  if (eventType === "invoice.paid") {
+    const subscriptionId = subscriptionIdFromInvoice(eventObject);
+    const identity = softwareIdentityFromInvoice(eventObject);
+    if (!subscriptionId || !identity) return json(200, { received: true, status: "software_identity_unresolved" });
 
-  const { data: recorded, error: recordError } = await admin.rpc("record_revenue_checkout", {
-    p_provider: "stripe",
-    p_provider_event_id: event.id,
-    p_provider_source_id: session.id,
-    p_offer_id: offerId,
-    p_offer_kind: kind,
-    p_amount_total: amountTotal,
-    p_currency: currency,
-    p_payment_status: "paid",
-    p_fulfillment_status: fulfillmentStatus,
-    p_customer_email_hash: emailHash,
-    p_metadata: safeMetadata,
-    p_intake_payload: intakePayload,
-  });
+    const email = String(eventObject.customer_email ?? "").trim().toLowerCase();
+    if (!email) return json(200, { received: true, status: "customer_email_unresolved" });
 
-  if (recordError || !Array.isArray(recorded) || recorded.length !== 1) {
-    return json(500, { error: "atomic_revenue_persistence_failed" });
+    const { data, error } = await admin.rpc("process_software_entitlement_event", {
+      p_event_id: event.id,
+      p_event_type: eventType,
+      p_action: "active",
+      p_subscription_id: subscriptionId,
+      p_customer_id: stringId(eventObject.customer),
+      p_customer_email_hash: await sha256Hex(email),
+      p_product_sku: identity.sku,
+      p_tier: identity.tier,
+      p_period_end: identity.periodEnd,
+    });
+    if (error) return json(500, { error: "entitlement_event_failed" });
+    return json(200, {
+      received: true,
+      entitlement: data?.[0]?.result ?? "processed",
+      product_sku: identity.sku,
+    });
   }
 
-  const row = recorded[0] as { fulfillment_status?: string; duplicate?: boolean };
-  return json(200, {
-    received: true,
-    verified: true,
-    offer_id: offerId,
-    fulfillment_status: row.fulfillment_status ?? fulfillmentStatus,
-    duplicate: Boolean(row.duplicate),
-  });
+  if (eventType === "invoice.payment_failed") {
+    const subscriptionId = subscriptionIdFromInvoice(eventObject);
+    if (!subscriptionId) return json(200, { received: true, status: "subscription_unresolved" });
+    const { data, error } = await admin.rpc("process_software_entitlement_event", {
+      p_event_id: event.id,
+      p_event_type: eventType,
+      p_action: "past_due",
+      p_subscription_id: subscriptionId,
+    });
+    if (error) return json(500, { error: "entitlement_event_failed" });
+    return json(200, { received: true, entitlement: data?.[0]?.result ?? "processed", status: "past_due" });
+  }
+
+  if (eventType === "customer.subscription.deleted") {
+    const subscriptionId = stringId(eventObject.id);
+    if (!subscriptionId) return json(400, { error: "subscription_identity_missing" });
+    const { data, error } = await admin.rpc("process_software_entitlement_event", {
+      p_event_id: event.id,
+      p_event_type: eventType,
+      p_action: "cancelled",
+      p_subscription_id: subscriptionId,
+    });
+    if (error) return json(500, { error: "entitlement_event_failed" });
+    return json(200, { received: true, entitlement: data?.[0]?.result ?? "processed", status: "cancelled" });
+  }
+
+  if (eventType === "customer.subscription.updated") {
+    const subscriptionId = stringId(eventObject.id);
+    const subscriptionStatus = String(eventObject.status ?? "");
+    const action = subscriptionStatus === "past_due" || subscriptionStatus === "unpaid"
+      ? "past_due"
+      : subscriptionStatus === "paused"
+        ? "paused"
+        : subscriptionStatus === "canceled"
+          ? "cancelled"
+          : null;
+    if (!subscriptionId || !action) return json(200, { received: true, status: "subscription_update_ignored" });
+    const { data, error } = await admin.rpc("process_software_entitlement_event", {
+      p_event_id: event.id,
+      p_event_type: eventType,
+      p_action: action,
+      p_subscription_id: subscriptionId,
+    });
+    if (error) return json(500, { error: "entitlement_event_failed" });
+    return json(200, { received: true, entitlement: data?.[0]?.result ?? "processed", status: action });
+  }
+
+  return json(200, { received: true, status: "event_ignored" });
 });
