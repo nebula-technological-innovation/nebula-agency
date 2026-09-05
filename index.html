@@ -3,49 +3,171 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Nebula Technological Innovation — Live Professional Services</title>
-  <meta name="description" content="Production-ready AI consulting, engineering, automation, documentation, data integration, defensive security, and B2B revenue operations from Nebula Technological Innovation." />
+  <title>Nebula Technological Innovation — AI, Automation, Data & Security Services</title>
+  <meta name="description" content="Outcome-led AI strategy, engineering automation, technical documentation, data integration, defensive security, and B2B revenue operations. Start with a bounded paid engagement and expand only after value is proven." />
   <style>
-    :root{color-scheme:dark;--bg:#050816;--panel:#0c1226;--line:#25304f;--text:#f4f7ff;--muted:#aeb9d6;--cyan:#00e5ff;--purple:#8b5cf6}
-    *{box-sizing:border-box}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:radial-gradient(circle at top,#141130 0,#050816 45%);color:var(--text)}
-    main{width:min(1120px,calc(100% - 40px));margin:auto;padding:72px 0}.eyebrow{color:var(--cyan);font-weight:800;letter-spacing:.08em;text-transform:uppercase;font-size:.8rem}.hero{padding:46px 0 64px;text-align:center}.hero h1{font-size:clamp(2.7rem,7vw,5.8rem);line-height:.96;letter-spacing:-.05em;margin:14px auto 24px;max-width:980px}.hero p{font-size:1.18rem;line-height:1.7;color:var(--muted);max-width:800px;margin:0 auto 30px}.cta{display:inline-block;padding:14px 20px;border-radius:12px;text-decoration:none;font-weight:800;background:var(--cyan);color:#041017}.secondary{background:transparent;color:var(--text);border:1px solid var(--line);margin-left:8px}.section-title{font-size:2rem;margin:18px 0 8px}.section-copy{color:var(--muted);margin:0 0 28px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}.card{display:flex;flex-direction:column;min-height:292px;padding:26px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,rgba(18,25,53,.96),rgba(9,14,34,.96));box-shadow:0 16px 50px rgba(0,0,0,.18)}.card h2{font-size:1.25rem;margin:0 0 8px;color:#dffbff}.price{font-size:1.8rem;font-weight:900;color:var(--cyan);margin:0 0 12px}.price small{font-size:.82rem;color:var(--muted);font-weight:600}.card p{color:var(--muted);line-height:1.6;margin:0 0 12px}.deliverable{font-size:.92rem;color:#dce6ff;margin-bottom:20px}.card a{display:block;text-align:center;text-decoration:none;border-radius:10px;padding:12px 14px;background:#fff;color:#07101f;font-weight:850;margin-top:auto}.process{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin-top:20px}.step{padding:20px;border-left:3px solid var(--purple);background:rgba(12,18,38,.7);border-radius:10px}.step strong{display:block;margin-bottom:8px}.step span,.gate{color:var(--muted);line-height:1.55}.gate{margin-top:36px;padding:18px;border:1px solid var(--line);border-radius:12px}.proof{margin:30px 0 0;padding:18px 20px;border:1px solid var(--line);border-radius:12px;background:rgba(12,18,38,.72);color:var(--muted);line-height:1.6}.footer{margin-top:62px;padding-top:24px;border-top:1px solid var(--line);color:#7f8baa;font-size:.92rem;text-align:center}@media(max-width:620px){main{width:min(100% - 24px,1120px);padding-top:38px}.secondary{display:block;margin:10px auto 0;width:max-content}}
+    :root{color-scheme:dark;--bg:#050816;--panel:#0c1226;--line:#25304f;--text:#f4f7ff;--muted:#aeb9d6;--cyan:#00e5ff;--purple:#8b5cf6;--ok:#83ffd8}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:radial-gradient(circle at top,#141130 0,#050816 45%);color:var(--text)}
+    main{width:min(1160px,calc(100% - 40px));margin:auto;padding:72px 0}
+    .eyebrow{color:var(--cyan);font-weight:800;letter-spacing:.08em;text-transform:uppercase;font-size:.8rem}
+    .hero{padding:46px 0 58px;text-align:center}
+    .hero h1{font-size:clamp(2.7rem,7vw,5.7rem);line-height:.96;letter-spacing:-.05em;margin:14px auto 24px;max-width:1000px}
+    .hero p{font-size:1.18rem;line-height:1.7;color:var(--muted);max-width:840px;margin:0 auto 30px}
+    .hero-proof{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:22px auto 0;max-width:900px}
+    .pill{border:1px solid var(--line);border-radius:999px;padding:8px 12px;color:#dce6ff;background:rgba(12,18,38,.72);font-size:.9rem}
+    .cta{display:inline-block;padding:14px 20px;border-radius:12px;text-decoration:none;font-weight:800;background:var(--cyan);color:#041017}
+    .secondary{background:transparent;color:var(--text);border:1px solid var(--line);margin-left:8px}
+    .section-title{font-size:2rem;margin:18px 0 8px}
+    .section-copy{color:var(--muted);margin:0 0 28px;line-height:1.65;max-width:880px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(285px,1fr));gap:18px}
+    .card{display:flex;flex-direction:column;min-height:332px;padding:26px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,rgba(18,25,53,.96),rgba(9,14,34,.96));box-shadow:0 16px 50px rgba(0,0,0,.18)}
+    .card h2{font-size:1.25rem;margin:0 0 8px;color:#dffbff}
+    .who{font-size:.82rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ok);font-weight:800;margin-bottom:10px}
+    .price{font-size:1.8rem;font-weight:900;color:var(--cyan);margin:0 0 12px}
+    .price small{font-size:.82rem;color:var(--muted);font-weight:600}
+    .card p{color:var(--muted);line-height:1.6;margin:0 0 12px}
+    .outcome{font-size:.95rem;color:#e8efff;margin-bottom:20px;line-height:1.55}
+    .card a{display:block;text-align:center;text-decoration:none;border-radius:10px;padding:12px 14px;background:#fff;color:#07101f;font-weight:850;margin-top:auto}
+    .process{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin-top:20px}
+    .step{padding:20px;border-left:3px solid var(--purple);background:rgba(12,18,38,.7);border-radius:10px}
+    .step strong{display:block;margin-bottom:8px}
+    .step span,.gate{color:var(--muted);line-height:1.55}
+    .gate{margin-top:36px;padding:18px;border:1px solid var(--line);border-radius:12px}
+    .proof{margin:30px 0 0;padding:18px 20px;border:1px solid var(--line);border-radius:12px;background:rgba(12,18,38,.72);color:var(--muted);line-height:1.6}
+    .ladder{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-top:22px}
+    .ladder div{padding:18px;border:1px solid var(--line);border-radius:14px;background:rgba(12,18,38,.6)}
+    .ladder strong{display:block;color:#fff;margin-bottom:6px}
+    .ladder span{color:var(--muted);line-height:1.5}
+    .kits{margin-top:72px}
+    .kit-banner{padding:28px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,rgba(13,24,45,.96),rgba(18,12,42,.96))}
+    .kit-banner h3{font-size:1.5rem;margin:0 0 10px}
+    .kit-banner p{color:var(--muted);line-height:1.65;margin:0 0 20px}
+    .kit-list{display:flex;flex-wrap:wrap;gap:9px;margin:18px 0 22px}
+    .kit-list span{border:1px solid var(--line);padding:8px 10px;border-radius:999px;color:#dce6ff;font-size:.9rem}
+    .footer{margin-top:62px;padding-top:24px;border-top:1px solid var(--line);color:#7f8baa;font-size:.92rem;text-align:center}
+    @media(max-width:620px){main{width:min(100% - 24px,1160px);padding-top:38px}.secondary{display:block;margin:10px auto 0;width:max-content}}
   </style>
 </head>
 <body>
 <main>
   <section class="hero">
     <div class="eyebrow">Nebula Technological Innovation</div>
-    <h1>Production services you can engage today.</h1>
-    <p>Scoped AI, engineering, automation, documentation, data, security, and B2B revenue-operations engagements. Every offer below has a fixed starting price, secure Stripe checkout, intake, and a defined fulfillment path.</p>
-    <a class="cta" href="#services">Choose a service</a>
+    <h1>Fix the next expensive bottleneck. Prove value. Then expand.</h1>
+    <p>Nebula delivers bounded professional engagements for teams that need better AI architecture, workflow automation, engineering operations, documentation, data integration, defensive security, or B2B revenue operations. Start with the smallest engagement that resolves a real decision or operational problem.</p>
+    <a class="cta" href="#services">Find the right engagement</a>
     <a class="cta secondary" href="mailto:christianroe@roeacquisitions.net?subject=Nebula%20enterprise%20engagement">Discuss enterprise scope</a>
+    <div class="hero-proof">
+      <span class="pill">Fixed starting prices</span>
+      <span class="pill">Secure Stripe checkout</span>
+      <span class="pill">Defined scope before delivery</span>
+      <span class="pill">No forced SaaS upsell</span>
+      <span class="pill">Manual fulfillment where appropriate</span>
+    </div>
   </section>
 
   <section id="services">
-    <h2 class="section-title">Live service offers</h2>
-    <p class="section-copy">Buy the smallest engagement that resolves the next concrete business or technical decision. Larger work is scoped only after discovery.</p>
+    <h2 class="section-title">Choose by problem, not by product name</h2>
+    <p class="section-copy">Each offer is designed around one concrete buyer problem and a bounded outcome. Larger implementation work is proposed only after the initial engagement establishes scope, authorization, and success criteria.</p>
     <div class="grid">
-      <article class="card"><h2>Strategy & Architecture Discovery</h2><div class="price">$250 <small>one time</small></div><p>AI strategy, architecture, workflow automation, deployment planning, and production-readiness assessment.</p><div class="deliverable">Deliverable: scoped findings, priorities, architecture/automation recommendations, and a concrete next-step plan.</div><a href="https://book.stripe.com/8x2cN6bJV5aQfVM77vbMQ0c">Buy discovery</a></article>
-      <article class="card"><h2>Engineering & Automation Sprint Deposit</h2><div class="price">$500 <small>deposit</small></div><p>API integrations, MCP systems, CI/CD, business automation, cloud operations, and codebase modernization.</p><div class="deliverable">Deliverable: confirmed sprint scope, implementation plan, and engineering work against agreed acceptance criteria.</div><a href="https://book.stripe.com/00w9AU9BNeLqeRI77vbMQ0d">Start engineering sprint</a></article>
-      <article class="card"><h2>Technical Documentation Sprint</h2><div class="price">$500 <small>one time</small></div><p>Architecture documents, implementation runbooks, SOPs, specifications, and operating documentation.</p><div class="deliverable">Deliverable: a defined documentation package suitable for engineering, operations, onboarding, or governance use.</div><a href="https://book.stripe.com/5kQ4gAeW7gTycJAbnLbMQ0e">Buy documentation sprint</a></article>
-      <article class="card"><h2>Data & Integration Assessment</h2><div class="price">$750 <small>one time</small></div><p>Data cleanup, migration, reporting, analytics, RAG preparation, and systems-integration planning.</p><div class="deliverable">Deliverable: current-state assessment, integration/data risks, target workflow, and prioritized implementation path.</div><a href="https://book.stripe.com/cNi4gAg0b5aQaBsdvTbMQ0j">Buy data assessment</a></article>
-      <article class="card"><h2>Production-Safe Security Assessment</h2><div class="price">$750 <small>one time</small></div><p>Authorized code/security review, dependency and SBOM analysis, secret-pattern review, and remediation planning.</p><div class="deliverable">Deliverable: evidence-based findings, severity/priorities, remediation plan, and verification criteria. Authorization required.</div><a href="https://book.stripe.com/8x23cw15h0UAfVMcrPbMQ0k">Buy security assessment</a></article>
-      <article class="card"><h2>B2B Revenue Operations Sprint</h2><div class="price">$499 <small>one time</small></div><p>ICP and offer positioning, CRM workflows, lifecycle messaging, sales enablement, SEO/content systems, and funnel instrumentation.</p><div class="deliverable">Deliverable: focused revenue-operations improvements and an executable sales/funnel action plan. Non-political B2B work only.</div><a href="https://book.stripe.com/3cI7sM9BNcDi24W77vbMQ0l">Buy revenue-ops sprint</a></article>
+      <article class="card">
+        <div class="who">For founders, CTOs & engineering leaders</div>
+        <h2>Strategy & Architecture Discovery</h2>
+        <div class="price">$250 <small>one time</small></div>
+        <p>Use this when the AI, automation, integration, or deployment path is unclear and you need the architecture decision before implementation.</p>
+        <div class="outcome"><strong>Outcome:</strong> written findings, priorities, architecture/automation recommendations, risks, and a concrete next-step plan.</div>
+        <a href="https://book.stripe.com/8x2cN6bJV5aQfVM77vbMQ0c">Book paid discovery</a>
+      </article>
+
+      <article class="card">
+        <div class="who">For operations & technical teams</div>
+        <h2>Engineering & Automation Sprint Deposit</h2>
+        <div class="price">$500 <small>deposit</small></div>
+        <p>Use this for repetitive manual workflows, disconnected APIs, MCP integrations, brittle CI/CD, cloud-operations pain, or modernization backlog.</p>
+        <div class="outcome"><strong>Outcome:</strong> confirmed sprint scope, implementation plan, delivery boundaries, and engineering work against agreed acceptance criteria.</div>
+        <a href="https://book.stripe.com/00w9AU9BNeLqeRI77vbMQ0d">Start scoped engineering sprint</a>
+      </article>
+
+      <article class="card">
+        <div class="who">For software, infrastructure & agency teams</div>
+        <h2>Technical Documentation Sprint</h2>
+        <div class="price">$500 <small>one time</small></div>
+        <p>Use this when tribal knowledge, missing runbooks, undocumented APIs/MCPs, weak SOPs, or onboarding friction are slowing the team down.</p>
+        <div class="outcome"><strong>Outcome:</strong> a defined package of architecture docs, implementation runbooks, SOPs, technical specifications, or operating documentation.</div>
+        <a href="https://book.stripe.com/5kQ4gAeW7gTycJAbnLbMQ0e">Scope documentation sprint</a>
+      </article>
+
+      <article class="card">
+        <div class="who">For data, product & operations leaders</div>
+        <h2>Data & Integration Assessment</h2>
+        <div class="price">$750 <small>one time</small></div>
+        <p>Use this for fragmented data, migration planning, reporting gaps, analytics architecture, system integrations, or RAG/knowledge preparation.</p>
+        <div class="outcome"><strong>Outcome:</strong> current-state assessment, risks, target workflow, access requirements, and a prioritized implementation path.</div>
+        <a href="https://book.stripe.com/cNi4gAg0b5aQaBsdvTbMQ0j">Book data assessment</a>
+      </article>
+
+      <article class="card">
+        <div class="who">For teams preparing or running production systems</div>
+        <h2>Production-Safe Security Assessment</h2>
+        <div class="price">$750 <small>one time</small></div>
+        <p>Use this for dependency risk, SBOM visibility, secret-pattern review, configuration weaknesses, or defensive security architecture gaps.</p>
+        <div class="outcome"><strong>Outcome:</strong> authorized evidence-based findings, severity and priority, remediation plan, and verification criteria. No destructive or unauthorized testing.</div>
+        <a href="https://book.stripe.com/8x23cw15h0UAfVMcrPbMQ0k">Request authorized assessment</a>
+      </article>
+
+      <article class="card">
+        <div class="who">For B2B founders & revenue leaders</div>
+        <h2>B2B Revenue Operations Sprint</h2>
+        <div class="price">$499 <small>one time</small></div>
+        <p>Use this when ICP, positioning, CRM workflow, lifecycle messaging, sales enablement, content systems, or funnel measurement are inconsistent.</p>
+        <div class="outcome"><strong>Outcome:</strong> a bounded non-political revenue-operations engagement with measurable funnel design and an executable action plan.</div>
+        <a href="https://book.stripe.com/3cI7sM9BNcDi24W77vbMQ0l">Book revenue-ops sprint</a>
+      </article>
     </div>
-    <div class="proof">Not sure which offer fits? Start with the $250 discovery. Nebula will not upsell unfinished software or supplier-dependent products as part of these engagements.</div>
+    <div class="proof"><strong>Default starting point:</strong> if the correct implementation path is not yet obvious, start with the $250 Strategy & Architecture Discovery. Nebula will not represent unfinished software, supplier-dependent commerce, or regulated products as the fulfillment mechanism for these engagements.</div>
+  </section>
+
+  <section style="margin-top:68px">
+    <h2 class="section-title">A simple value ladder</h2>
+    <p class="section-copy">The objective is not to maximize the first invoice. It is to make the smallest useful commitment, deliver it well, and expand only when the next problem is verified.</p>
+    <div class="ladder">
+      <div><strong>1. Diagnose</strong><span>Paid discovery or assessment resolves uncertainty and defines success criteria.</span></div>
+      <div><strong>2. Implement</strong><span>A scoped engineering, data, documentation, security, or revenue-ops engagement addresses the verified problem.</span></div>
+      <div><strong>3. Validate</strong><span>Delivery is checked against agreed scope, evidence, and customer-success criteria.</span></div>
+      <div><strong>4. Expand</strong><span>Only then consider adjacent implementation, managed operations, or future software where production readiness is proven.</span></div>
+    </div>
+  </section>
+
+  <section class="kits">
+    <div class="kit-banner">
+      <div class="eyebrow">Self-serve operator tools</div>
+      <h3>Need a smaller, immediate operational asset instead?</h3>
+      <p>Nebula Operator Kits are low-cost digital tools for freelancers, developers, agencies, and AI operators. Current packs cover review-request follow-up, after-hours lead handling, local-service site delivery, client handoff, offer economics, safer deploys, invoice follow-up, and multi-agent operations.</p>
+      <div class="kit-list">
+        <span>Review Relay — $29</span>
+        <span>After Hours Kit — $39</span>
+        <span>Site Sprint Kit — $149</span>
+        <span>Client Handoff Pack — $49</span>
+        <span>Offer Math Workbook — $29</span>
+        <span>Ship Gate Pack — $49</span>
+        <span>Collections Pack — $39</span>
+        <span>Agent Ops Pack — $79</span>
+      </div>
+      <a class="cta" href="https://nebula-operator-kits.vercel.app">Browse operator kits</a>
+    </div>
   </section>
 
   <section style="margin-top:64px">
-    <h2 class="section-title">Customer-success path</h2>
+    <h2 class="section-title">What happens after purchase</h2>
     <div class="process">
-      <div class="step"><strong>1. Pay & submit scope</strong><span>Complete Stripe checkout and provide the requested company, scope, system, authorization, or outcome information.</span></div>
-      <div class="step"><strong>2. Confirm fulfillment</strong><span>Nebula verifies payment, scope, delivery plan, support path, and success criteria before work begins.</span></div>
-      <div class="step"><strong>3. Deliver & validate</strong><span>The engagement is delivered against agreed scope, followed by documented validation, customer-success review, and the next recommended action.</span></div>
+      <div class="step"><strong>1. Pay & submit scope</strong><span>Complete Stripe checkout and provide the requested company, objective, systems, authorization, or delivery information.</span></div>
+      <div class="step"><strong>2. Confirm fulfillment</strong><span>Nebula verifies payment, purchased scope, delivery owner, support path, and success criteria before work begins.</span></div>
+      <div class="step"><strong>3. Deliver & validate</strong><span>The engagement is completed against agreed boundaries, followed by validation and a customer-success review.</span></div>
     </div>
-    <div class="gate">Aether self-serve software/APIs, cloud, mobile, telecom, financial services, supplier-dependent commerce, and regulated products remain behind their production, entitlement, provider, or legal activation gates until those paths are verified end to end.</div>
+    <div class="gate"><strong>Production-readiness policy:</strong> Aether self-serve software/APIs, cloud, mobile, telecom, financial services, supplier-dependent commerce, and regulated products remain behind their production, entitlement, provider, supplier, or legal activation gates. Preview software may be demonstrated or discussed, but is not represented here as generally available production SaaS.</div>
   </section>
 
-  <div class="footer">© 2026 Nebula Technological Innovation. Professional services subject to confirmed scope, authorization, and applicable terms.</div>
+  <div class="footer">© 2026 Nebula Technological Innovation. Professional services subject to confirmed scope, authorization, payment verification, and applicable terms.</div>
 </main>
 </body>
 </html>
