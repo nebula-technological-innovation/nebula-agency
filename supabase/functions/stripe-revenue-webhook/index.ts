@@ -2,9 +2,16 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const SERVICE_OFFERS = new Set([
+  "ai_automation_assessment",
+  "atlas_ai_automation_pilot",
   "b2b_revenue_operations_sprint",
   "production_safe_security_assessment",
   "data_integration_analytics_assessment",
+  "defensive_security_assessment",
+  "integration_analytics_assessment",
+  "technical_documentation_sprint",
+  "automation_integration_sprint_deposit",
+  "strategy_architecture_discovery",
 ]);
 
 const DIGITAL_OFFERS = new Set([
@@ -13,6 +20,9 @@ const DIGITAL_OFFERS = new Set([
   "ship-gate-pack",
   "collections-pack",
   "agent-ops-pack",
+  "review-relay",
+  "after-hours-kit",
+  "site-sprint-kit",
 ]);
 
 const JSON_HEADERS = { "content-type": "application/json", "cache-control": "no-store" };
@@ -124,7 +134,16 @@ Deno.serve(async (req: Request) => {
   const emailHash = email ? await sha256Hex(email) : null;
 
   const safeMetadata: Record<string, unknown> = {};
-  for (const key of ["offer", "sku", "product_id", "revenue_stream", "catalog", "mode"]) {
+  for (const key of [
+    "offer",
+    "sku",
+    "product_id",
+    "revenue_stream",
+    "catalog",
+    "mode",
+    "payment_stage",
+    "business_unit",
+  ]) {
     if (metadata[key] != null) safeMetadata[key] = metadata[key];
   }
 
