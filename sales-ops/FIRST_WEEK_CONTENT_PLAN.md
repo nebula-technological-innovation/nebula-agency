@@ -1,178 +1,87 @@
-# First Week Content Plan - LinkedIn Posts
+# Evidence-Safe Organic Content Plan
 
-## Post 1: Operational Inefficiencies (Day 1)
+## Purpose
+Generate qualified inbound demand for Nebula's production-ready professional services and operator kits without fabricated case studies, fake metrics, unsupported customer claims, or promotion of gated software as generally available.
 
-**LinkedIn Post**:
-```
-Businesses are wasting hundreds of hours on repetitive operational work.
+## Publishing rule
+Every post must fit one of four evidence classes:
+1. **Observed:** a fact directly verified in Nebula operations or public documentation.
+2. **Demonstrated:** a workflow, code path, checklist, teardown, or demo Nebula can actually show.
+3. **Educational:** a general explanation or framework with no claim that Nebula produced a customer's result.
+4. **Offer:** a truthful description of a currently fulfillable service or digital product.
 
-Manual scheduling. Manual follow-up. Manual lead handling. Disconnected 
-systems.
+Never write invented customer stories, invented percentages, invented savings, invented pipeline value, or implied testimonials.
 
-Here are the biggest operational inefficiencies I see in SMBs:
+## Week 1
 
-❌ Customer intake is manual
-❌ Leads are tracked in spreadsheets
-❌ Follow-up reminders are sent via email
-❌ Data is entered multiple times in different systems
-❌ Reporting requires manual compilation
+### Day 1 — Manual-workflow teardown
+Hook: "A workflow does not need AI because AI is fashionable. It needs automation when the cost of repeated human coordination is higher than the cost and risk of automating it."
 
-What if you could eliminate all of this?
+Explain a generic five-step workflow: intake → validation → routing → action → audit trail. Show where APIs, n8n/MCP, human approval, and rollback belong.
 
-Think about it:
-- Fewer data entry errors
-- Better customer experience
-- Faster response times
-- More time for strategy
+CTA: **Nebula Engineering — Automation & Integration Sprint Deposit ($500).**
 
-Nebula helps businesses automate these workflows in weeks, not months.
+### Day 2 — GitHub production-security checklist
+Hook: "Before adding another AI agent to production, verify the repository can survive ordinary operational mistakes."
 
-Currently offering free automation audits for local businesses.
+Cover MFA, least privilege, branch protection/rulesets, secret scanning, dependency review/SBOM, pinned Actions, protected environments, OIDC, logging, and rollback.
 
-What operational task could you automate first?
-```
+CTA: **Nebula Security — Production-Safe Security Assessment ($750).**
 
----
+### Day 3 — AI architecture decision framework
+Hook: "The expensive AI decision is rarely 'which model is smartest?' It is choosing the wrong architecture around the model."
 
-## Post 2: GitHub Security Mistakes (Day 2)
+Compare local vs hosted inference, tool authority, RAG vs fine-tuning, synchronous vs event-driven orchestration, and fail-open vs fail-closed controls.
 
-**LinkedIn Post**:
-```
-Common GitHub security mistakes I see in growing companies:
+CTA: **Strategy & Architecture Discovery ($250).**
 
-🚨 No MFA enforcement
-🚨 Secrets exposed in git history
-🚨 No branch protection on main
-🚨 Third-party Actions not pinned to versions
-🚨 Inactive team members still have access
-🚨 No audit logging enabled
+### Day 4 — Offer economics without fake ROI
+Hook: "Do not claim an automation pays for itself until you can show the math."
 
-Result? Security breaches. Data leaks. Compliance failures.
+Teach: implementation cost + recurring variable cost + expected support/refund burden vs verified labor/revenue effect. Label assumptions explicitly.
 
-The good news:
-✅ All of these are fixable in a few hours
-✅ You don't need expensive consultants
-✅ GitHub has built-in tools for this
+CTA: **Offer Math Workbook ($29)** or **B2B Revenue Operations Sprint ($499).**
 
-Is your GitHub setup secure?
+### Day 5 — Data integration failure modes
+Hook: "Most integration projects fail before the API call."
 
-Offer: Free 15-minute security audit. No obligations.
-```
+Cover identity mapping, source-of-truth conflicts, schema drift, idempotency, permissions, retries, observability, and reconciliation.
 
----
+CTA: **Data & Integration Assessment ($750).**
 
-## Post 3: AI Workflow Automation ROI (Day 3)
+### Day 6 — Agent governance
+Hook: "An AI agent should not have more authority than the business process it replaces."
 
-**LinkedIn Post**:
-```
-I just helped a dental office reduce their front-desk workload by 12 
-hours per week.
+Show publish/send/spend gates, approval boundaries, kill switches, audit events, retry semantics, and evaluation.
 
-How?
+CTA: **Agent Ops Pack ($79)**.
 
-We implemented:
-1. Automated appointment reminders (SMS + Email)
-2. AI intake form that populates CRM
-3. Automated follow-up emails for no-shows
-4. Dashboard showing real-time stats
+### Day 7 — Documentation as operational infrastructure
+Hook: "If a production process exists only in one person's head, it is not operationally mature."
 
-Result:
-📊 95% appointment show rate (up from 78%)
-📊 Intake process reduced 80%
-📊 Saved 12 hours/week of manual work
+Cover runbooks, rollback cards, system maps, onboarding docs, decision records, and incident checklists.
 
-Their front desk person now focuses on:
-- Excellent customer service
-- Problem-solving
-- Building relationships
+CTA: **Technical Documentation Sprint ($500)** or **Ship Gate Pack ($49).**
 
-Not manual data entry.
+## Distribution
+- LinkedIn founder account: 3 strong posts/week, not 2/day.
+- GitHub: publish technical checklists/runbooks where they are genuinely useful and license-safe.
+- Nebula site: convert the best posts into searchable problem/solution pages.
+- Direct sales: use content only as context for already-qualified accounts; do not blast links to every prospect.
+- Partner/referral motion: send the most relevant technical asset to implementation partners when it helps their customers.
 
-This isn't science fiction. This is what modern businesses look like.
+## Conversion ladder
+$29–$149 operator kit → $250–$750 assessment/sprint → scoped implementation → ongoing support/managed operations only after need is verified.
 
-If your business is still doing things manually, now is the time to 
-modernize.
-```
+## Measurement
+Track only verifiable counts:
+- qualified conversations
+- replies
+- booked/paid assessments
+- paid operator-kit checkouts
+- successful fulfillment
+- expansion requests
+- refunds/cancellations
+- realized settled revenue
 
----
-
-## Post 4: Cost of Manual Workflows (Day 4)
-
-**LinkedIn Post**:
-```
-Let's do some math.
-
-If one admin spends 4 hours/day on manual data entry:
-
-4 hours × 5 days = 20 hours/week
-20 hours × $25/hour = $500/week
-$500 × 52 weeks = $26,000/year
-
-On ONE task.
-
-Most businesses have 3-5 of these manual tasks:
-
-- Lead entry
-- Appointment scheduling
-- Follow-up tracking
-- CRM updates
-- Invoice generation
-
-That's $78k-$130k per year in labor cost on things that can be 
-automated.
-
-Solution?
-
-⚡ Automation pays for itself in 1-2 months
-⚡ Quality improves immediately
-⚡ Your team can focus on actual work
-⚡ Revenue grows
-```
-
----
-
-## Post 5: Infrastructure Modernization (Day 5)
-
-**LinkedIn Post**:
-```
-Your infrastructure is either:
-
-1️⃣ Helping you grow faster
-2️⃣ Holding you back
-
-There's no middle ground.
-
-Two months ago, I audited a company with:
-
-❌ 7 different tools, none talking to each other
-❌ Data entered manually in 3 places
-❌ No API integrations
-❌ Reporting took 2 days each month
-❌ Security? Not great.
-
-Today they have:
-✅ 3 integrated tools (down from 7)
-✅ Zero manual data entry (100% automated)
-✅ Real-time dashboards
-✅ Security hardened
-✅ Team capacity increased 30%
-
-That's infrastructure modernization.
-
-Let's talk.
-```
-
----
-
-## POSTING SCHEDULE
-
-- **Best Time**: 8am or 5pm (weekdays)
-- **Format**: Native LinkedIn posts (not links)
-- **Daily Goal**: 1 post minimum
-- **Engagement**: Reply to every comment in first hour
-
----
-
-**Owner**: Marketing / Sales
-**Published**: Week 1
-**Next**: Expand to 2 posts/day
+Do not treat impressions, hypothetical pipeline, unpaid invoices, test checkouts, or self-purchases as revenue.
