@@ -1,5 +1,9 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  CanonicalForwardError,
+  forwardCanonicalEntitlement,
+} from "../_shared/canonical-entitlement-forwarder.ts";
 
 const SERVICE_OFFERS = new Set([
   "ai_automation_assessment",
@@ -92,7 +96,16 @@ function priceFromLine(line: any): any {
   return line?.price ?? line?.pricing?.price_details?.price ?? line?.pricing?.price_details ?? null;
 }
 
-function softwareIdentityFromInvoice(invoice: any): { sku: string; tier: string; periodEnd: string | null } | null {
+type SoftwareIdentity = {
+  sku: string;
+  tier: string;
+  periodEnd: string | null;
+  providerPriceId: string | null;
+  canonicalPriceId: string | null;
+  fulfillment: string | null;
+};
+
+function softwareIdentityFromInvoice(invoice: any): SoftwareIdentity | null {
   for (const line of invoice?.lines?.data ?? []) {
     const price = priceFromLine(line);
     const metadata = price?.metadata ?? line?.metadata ?? {};
@@ -100,13 +113,31 @@ function softwareIdentityFromInvoice(invoice: any): { sku: string; tier: string;
     if (!sku) continue;
     const tier = String(metadata.nebula_tier ?? "basic").trim() || "basic";
     const periodEnd = Number(line?.period?.end);
+    const providerPriceId = stringId(price);
+    const lookupKey = typeof price?.lookup_key === "string" ? price.lookup_key.trim() : "";
+    const canonicalPriceId = String(metadata.canonical_price_id ?? lookupKey).trim() || null;
+    const fulfillment = String(metadata.nebula_fulfillment ?? metadata.fulfillment_type ?? "").trim() || null;
     return {
       sku,
       tier,
       periodEnd: Number.isFinite(periodEnd) ? new Date(periodEnd * 1000).toISOString() : null,
+      providerPriceId,
+      canonicalPriceId,
+      fulfillment,
     };
   }
   return null;
+}
+
+function canonicalForwardFailure(error: unknown): Response {
+  if (error instanceof CanonicalForwardError) {
+    return json(503, {
+      error: error.code,
+      retryable: true,
+      upstream_status: error.status,
+    });
+  }
+  return json(503, { error: "canonical_entitlement_forward_failed", retryable: true });
 }
 
 Deno.serve(async (req: Request) => {
@@ -231,6 +262,41 @@ Deno.serve(async (req: Request) => {
     const email = String(eventObject.customer_email ?? "").trim().toLowerCase();
     if (!email) return json(200, { received: true, status: "customer_email_unresolved" });
 
+    const amount = Number.isSafeInteger(eventObject.amount_paid) && eventObject.amount_paid >= 0
+      ? eventObject.amount_paid
+      : Number.isSafeInteger(eventObject.total) && eventObject.total >= 0
+        ? eventObject.total
+        : 0;
+    const currency = typeof eventObject.currency === "string" && /^[a-z]{3}$/i.test(eventObject.currency)
+      ? eventObject.currency.toLowerCase()
+      : "usd";
+    const needsApiKey = identity.fulfillment === "api_key" || identity.sku.includes("api");
+
+    try {
+      await forwardCanonicalEntitlement(admin, "/internal/payment-events", {
+        event_id: event.id,
+        event_type: eventType,
+        paid: true,
+        customer_email: email,
+        product_id: identity.sku,
+        product_name: identity.sku,
+        tier: identity.tier,
+        fulfillment_type: "software_entitlement",
+        amount,
+        currency,
+        payment_intent_id: stringId(eventObject.payment_intent),
+        subscription_id: subscriptionId,
+        needs_license_key: false,
+        needs_api_key: needsApiKey,
+        canonical_price_id: identity.canonicalPriceId,
+        entitlement_tier: identity.tier,
+        payment_provider: "stripe",
+        provider_price_id: identity.providerPriceId,
+      });
+    } catch (error) {
+      return canonicalForwardFailure(error);
+    }
+
     const { data, error } = await admin.rpc("process_software_entitlement_event", {
       p_event_id: event.id,
       p_event_type: eventType,
@@ -245,6 +311,7 @@ Deno.serve(async (req: Request) => {
     if (error) return json(500, { error: "entitlement_event_failed" });
     return json(200, {
       received: true,
+      canonical_forwarding: true,
       entitlement: data?.[0]?.result ?? "processed",
       product_sku: identity.sku,
     });
@@ -253,6 +320,16 @@ Deno.serve(async (req: Request) => {
   if (eventType === "invoice.payment_failed") {
     const subscriptionId = subscriptionIdFromInvoice(eventObject);
     if (!subscriptionId) return json(200, { received: true, status: "subscription_unresolved" });
+    try {
+      await forwardCanonicalEntitlement(admin, "/internal/subscription-events", {
+        event_id: event.id,
+        event_type: eventType,
+        subscription_id: subscriptionId,
+        action: "past_due",
+      });
+    } catch (error) {
+      return canonicalForwardFailure(error);
+    }
     const { data, error } = await admin.rpc("process_software_entitlement_event", {
       p_event_id: event.id,
       p_event_type: eventType,
@@ -260,12 +337,22 @@ Deno.serve(async (req: Request) => {
       p_subscription_id: subscriptionId,
     });
     if (error) return json(500, { error: "entitlement_event_failed" });
-    return json(200, { received: true, entitlement: data?.[0]?.result ?? "processed", status: "past_due" });
+    return json(200, { received: true, canonical_forwarding: true, entitlement: data?.[0]?.result ?? "processed", status: "past_due" });
   }
 
   if (eventType === "customer.subscription.deleted") {
     const subscriptionId = stringId(eventObject.id);
     if (!subscriptionId) return json(400, { error: "subscription_identity_missing" });
+    try {
+      await forwardCanonicalEntitlement(admin, "/internal/subscription-events", {
+        event_id: event.id,
+        event_type: eventType,
+        subscription_id: subscriptionId,
+        action: "cancelled",
+      });
+    } catch (error) {
+      return canonicalForwardFailure(error);
+    }
     const { data, error } = await admin.rpc("process_software_entitlement_event", {
       p_event_id: event.id,
       p_event_type: eventType,
@@ -273,7 +360,7 @@ Deno.serve(async (req: Request) => {
       p_subscription_id: subscriptionId,
     });
     if (error) return json(500, { error: "entitlement_event_failed" });
-    return json(200, { received: true, entitlement: data?.[0]?.result ?? "processed", status: "cancelled" });
+    return json(200, { received: true, canonical_forwarding: true, entitlement: data?.[0]?.result ?? "processed", status: "cancelled" });
   }
 
   if (eventType === "customer.subscription.updated") {
@@ -287,6 +374,16 @@ Deno.serve(async (req: Request) => {
           ? "cancelled"
           : null;
     if (!subscriptionId || !action) return json(200, { received: true, status: "subscription_update_ignored" });
+    try {
+      await forwardCanonicalEntitlement(admin, "/internal/subscription-events", {
+        event_id: event.id,
+        event_type: eventType,
+        subscription_id: subscriptionId,
+        action,
+      });
+    } catch (error) {
+      return canonicalForwardFailure(error);
+    }
     const { data, error } = await admin.rpc("process_software_entitlement_event", {
       p_event_id: event.id,
       p_event_type: eventType,
@@ -294,7 +391,7 @@ Deno.serve(async (req: Request) => {
       p_subscription_id: subscriptionId,
     });
     if (error) return json(500, { error: "entitlement_event_failed" });
-    return json(200, { received: true, entitlement: data?.[0]?.result ?? "processed", status: action });
+    return json(200, { received: true, canonical_forwarding: true, entitlement: data?.[0]?.result ?? "processed", status: action });
   }
 
   return json(200, { received: true, status: "event_ignored" });
