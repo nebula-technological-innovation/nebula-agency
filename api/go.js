@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 
 const OFFERS = {
+  'atlas-assessment': 'https://book.stripe.com/4gM9AU8xJdHmgZQ77vbMQ0w',
   strategy_architecture_discovery: 'https://book.stripe.com/8x2cN6bJV5aQfVM77vbMQ0c',
   automation_integration_sprint: 'https://book.stripe.com/00w9AU9BNeLqeRI77vbMQ0d',
   technical_documentation_sprint: 'https://book.stripe.com/5kQ4gAeW7gTycJAbnLbMQ0e',
