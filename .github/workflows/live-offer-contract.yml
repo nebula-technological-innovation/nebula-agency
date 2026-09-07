@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - 'api/go.js'
+      - 'api/revenue-status.js'
+      - 'api/_offers.js'
       - 'index.html'
       - 'landing-pages/operator-kits.html'
       - 'tests/verify-live-offers.mjs'
