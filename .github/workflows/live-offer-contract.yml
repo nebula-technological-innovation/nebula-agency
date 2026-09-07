@@ -1,0 +1,31 @@
+name: Live Offer Contract
+
+on:
+  pull_request:
+    paths:
+      - 'api/go.js'
+      - 'index.html'
+      - 'landing-pages/operator-kits.html'
+      - 'tests/verify-live-offers.mjs'
+      - '.github/workflows/live-offer-contract.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'api/go.js'
+      - 'index.html'
+      - 'landing-pages/operator-kits.html'
+      - 'tests/verify-live-offers.mjs'
+      - '.github/workflows/live-offer-contract.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify all 15 live offer routes
+        run: node tests/verify-live-offers.mjs
