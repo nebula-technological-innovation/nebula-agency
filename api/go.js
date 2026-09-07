@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import { OFFERS } from './_offers.js';
 
 function clean(value, fallback='unknown', max=120) {
