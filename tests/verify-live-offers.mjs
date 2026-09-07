@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { OFFERS, offerSummary } from '../api/_offers.js';
 
 const expected = new Map(Object.entries({
   'atlas-assessment': 'https://book.stripe.com/4gM9AU8xJdHmgZQ77vbMQ0w',
@@ -18,12 +19,17 @@ const expected = new Map(Object.entries({
   'agent-ops-pack': 'https://buy.stripe.com/14A4gA01d46M9xo4ZnbMQ0m',
 }));
 
-const router = fs.readFileSync('api/go.js', 'utf8');
 for (const [offer, url] of expected) {
-  if (!router.includes(`'${offer}': '${url}'`) &&
-      !router.includes(`${offer}: '${url}'`)) {
+  if (OFFERS[offer]?.url !== url) {
     throw new Error(`verified offer mapping missing or drifted: ${offer}`);
   }
+}
+
+const summary = offerSummary();
+if (summary.live_checkout_offer_count !== 15 ||
+    summary.professional_service_offer_count !== 7 ||
+    summary.digital_product_offer_count !== 8) {
+  throw new Error(`catalog summary drifted: ${JSON.stringify(summary)}`);
 }
 
 const pages = [
@@ -47,12 +53,21 @@ for (const offer of expected.keys()) {
   }
 }
 
-if (expected.size !== 15) {
-  throw new Error(`expected 15 verified offers, found ${expected.size}`);
+const goSource = fs.readFileSync('api/go.js', 'utf8');
+if (!goSource.includes("X-Nebula-Attribution")) {
+  throw new Error('attribution diagnostic response header is missing');
+}
+if (!goSource.includes("marketing_attribution_failed")) {
+  throw new Error('bounded attribution failure log is missing');
+}
+if (/console\.(log|warn|error)\([^\n]*(SERVICE_ROLE|SECRET|process\.env)/i.test(goSource)) {
+  throw new Error('attribution diagnostics may expose secret material');
 }
 
 console.log(JSON.stringify({
   status: 'PASS',
   verified_offer_count: expected.size,
   customer_facing_offer_count: new Set(referenced).size,
+  professional_service_offer_count: summary.professional_service_offer_count,
+  digital_product_offer_count: summary.digital_product_offer_count,
 }));
