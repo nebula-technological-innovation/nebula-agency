@@ -16,6 +16,7 @@ const expected = new Map(Object.entries({
   'ship-gate-pack': 'https://buy.stripe.com/eVq9AUg0beLqaBsdvTbMQ0o',
   'collections-pack': 'https://buy.stripe.com/eVqaEY3dp0UAcJAcrPbMQ0n',
   'agent-ops-pack': 'https://buy.stripe.com/14A4gA01d46M9xo4ZnbMQ0m',
+  'ai-automation-starter-kit': 'https://buy.stripe.com/cNibJ2dS31YEeRI3VjbMQ0x',
 }));
 
 const router = fs.readFileSync('api/go.js', 'utf8');
@@ -29,6 +30,14 @@ for (const [offer, url] of expected) {
 const pages = [
   fs.readFileSync('index.html', 'utf8'),
   fs.readFileSync('landing-pages/operator-kits.html', 'utf8'),
+  fs.readFileSync('landing-pages/operator-kits/ai-automation-starter-kit.html', 'utf8'),
+  fs.readFileSync('landing-pages/services/atlas-ai-automation-assessment.html', 'utf8'),
+  fs.readFileSync('landing-pages/services/strategy-architecture-discovery.html', 'utf8'),
+  fs.readFileSync('landing-pages/services/automation-integration-sprint.html', 'utf8'),
+  fs.readFileSync('landing-pages/services/technical-documentation-sprint.html', 'utf8'),
+  fs.readFileSync('landing-pages/services/data-integration-assessment.html', 'utf8'),
+  fs.readFileSync('landing-pages/services/production-safe-security-assessment.html', 'utf8'),
+  fs.readFileSync('landing-pages/services/b2b-revenue-operations-sprint.html', 'utf8'),
 ].join('\n');
 
 const referenced = [
@@ -47,8 +56,8 @@ for (const offer of expected.keys()) {
   }
 }
 
-if (expected.size !== 15) {
-  throw new Error(`expected 15 verified offers, found ${expected.size}`);
+if (expected.size !== 16) {
+  throw new Error(`expected 16 verified offers, found ${expected.size}`);
 }
 
 console.log(JSON.stringify({
