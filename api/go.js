@@ -15,7 +15,8 @@ const OFFERS = {
   'client-handoff-pack': 'https://buy.stripe.com/eVq28sdS30UA7pg1NbbMQ0q',
   'review-relay': 'https://buy.stripe.com/28EdRa15hdHm6lcbnLbMQ0t',
   'after-hours-kit': 'https://buy.stripe.com/8x2dRabJV1YEeRIezXbMQ0s',
-  'site-sprint-kit': 'https://buy.stripe.com/6oU14o7tFavadNEdvTbMQ0r'
+  'site-sprint-kit': 'https://buy.stripe.com/6oU14o7tFavadNEdvTbMQ0r',
+  'ai-automation-starter-kit': 'https://buy.stripe.com/cNibJ2dS31YEeRI3VjbMQ0x'
 };
 
 function clean(value, fallback='unknown', max=120) {
