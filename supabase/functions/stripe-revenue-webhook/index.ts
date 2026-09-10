@@ -14,13 +14,17 @@ const SERVICE_OFFERS = new Set([
   "production_safe_security_assessment",
   "data_integration_analytics_assessment",
   "defensive_security_assessment",
+  "security_assessment",
   "integration_analytics_assessment",
+  "data_integration_assessment",
   "technical_documentation_sprint",
   "automation_integration_sprint_deposit",
+  "automation_integration_sprint",
   "strategy_architecture_discovery",
 ]);
 
 const DIGITAL_OFFERS = new Set([
+  "ai-automation-starter-kit",
   "client-handoff-pack",
   "offer-math-workbook",
   "ship-gate-pack",
