@@ -7,7 +7,9 @@ import {
 
 const SERVICE_OFFERS = new Set([
   "ai_automation_assessment",
+  "atlas-assessment",
   "atlas_ai_automation_pilot",
+  "atlas-pilot",
   "b2b_revenue_operations_sprint",
   "production_safe_security_assessment",
   "data_integration_analytics_assessment",
