@@ -1,6 +1,6 @@
 // Run locally with: deno test --allow-none tests/canonical-entitlement-forwarder.test.ts
 // No Stripe, Supabase, network, secrets, or live payment calls.
-import { assert, assertEquals, assertRejects } from "jsr:@std/assert@1.0.14";
+import { assertEquals, assertRejects } from "jsr:@std/assert@1.0.14";
 import {
   CanonicalForwardError,
   forwardCanonicalEntitlement,
@@ -25,6 +25,19 @@ function client(url: string | null, token: string | null): RpcClient {
     },
   };
 }
+
+Deno.test("missing event id fails closed before RPC or HTTP", async () => {
+  let rpcCalls = 0;
+  let httpCalls = 0;
+  const admin: RpcClient = { rpc: async () => { rpcCalls++; return { data: "secret", error: null }; } };
+  const fetchMock: FetchLike = async () => { httpCalls++; return new Response(null, { status: 200 }); };
+  await assertRejects(
+    () => forwardCanonicalEntitlement(admin, "/internal/payment-events", { paid: true }, fetchMock),
+    CanonicalForwardError, "canonical_entitlement_forward_failed",
+  );
+  assertEquals(rpcCalls, 0);
+  assertEquals(httpCalls, 0);
+});
 
 Deno.test("missing canonical URL fails closed without network call", async () => {
   let calls = 0;
