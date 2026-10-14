@@ -62,3 +62,6 @@ for (const field of [
 ]) {
   assert.ok(source.includes('"' + field + '"'), 'Missing live v11 metadata: ' + field);
 }
+
+assert.ok(source.includes('safeMetadata.canonical_offer_id = offerId;'),
+  'Provider record must preserve deployed v11 canonical_offer_id for audit and reconciliation');
