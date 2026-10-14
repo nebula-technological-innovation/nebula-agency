@@ -1,4 +1,4 @@
-// Source contract guard. Runtime signed-event/replay testing is still a release requirement.
+// Source-level release assertions, not a substitute for signed-event replay tests.
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -11,12 +11,26 @@ for (const marker of [
   'checkout.session.completed',
   'checkout.session.async_payment_succeeded',
   'record_revenue_checkout',
-  'forwardCanonicalEntitlement',
-  'canonical_entitlement_forward_failed',
-  'json(503',
-]) assert.ok(source.includes(marker), 'Missing required payment safety marker: ' + marker);
-
+  'forwardCanonicalEntitlement(admin, "/internal/payment-events"',
+  'canonicalForwardFailure(error)',
+  'canonical_forwarding: kind !== "unknown"',
+  'customer_email_unresolved',
+  'payment_identity_unresolved',
+  'verifyStripeSignature(raw',
+  'invoice.payment_failed',
+  'invoice.paid',
+  'customer.subscription.deleted',
+]) {
+  assert.ok(source.includes(marker), 'Missing safety marker: ' + marker);
+}
+const durableWrite = source.indexOf('record_revenue_checkout');
+const canonicalPaidEvent = source.indexOf('forwardCanonicalEntitlement(admin, "/internal/payment-events"');
+const successfulPaidAck = source.indexOf('canonical_status: kind === "unknown" ? "pending_review" : "forwarded"');
+assert.ok(durableWrite >= 0 && canonicalPaidEvent > durableWrite && successfulPaidAck > canonicalPaidEvent,
+  'Durable persistence and canonical forwarding must precede successful acknowledgment');
+assert.ok(source.includes('return canonicalForwardFailure(error);'),
+  'Canonical forwarding errors must return a retryable 5xx');
 assert.ok(!source.includes('canonicalStatus="not_configured"'),
-  'Never acknowledge recognized paid checkout with missing canonical forwarding configuration');
-assert.ok(source.includes('catch(error){ return canonicalForwardFailure(error); }'),
-  'Canonical payment forwarding must fail with a retryable 503');
+  'Missing forwarding configuration must not be acknowledged as successfully delivered');
+assert.ok(source.split('\n').length > 400,
+  'Do not replace the readable main webhook source with a shorter deployed snapshot');
