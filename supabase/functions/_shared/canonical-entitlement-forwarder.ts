@@ -30,7 +30,14 @@ export async function forwardCanonicalEntitlement(
   payload: Record<string, unknown>,
   fetchImpl: FetchLike = fetch,
 ): Promise<Record<string, unknown>> {
-  // Never dispatch an event without a stable provider identity: downstream retries\n  // must share an idempotency key to prevent duplicate fulfillment.\n  const eventId = payload.event_id;\n  if (typeof eventId !== "string" || !eventId.trim()) {\n    throw new CanonicalForwardError("canonical_entitlement_forward_failed");\n  }\n\n  const [baseUrl, token] = await Promise.all([
+  // Never dispatch an event without a stable provider identity: downstream retries
+  // must share an idempotency key to prevent duplicate fulfillment.
+  const eventId = payload.event_id;
+  if (typeof eventId !== "string" || !eventId.trim()) {
+    throw new CanonicalForwardError("canonical_entitlement_forward_failed");
+  }
+
+  const [baseUrl, token] = await Promise.all([
     runtimeSecret(admin, "canonical_entitlement_service_url"),
     runtimeSecret(admin, "canonical_entitlement_event_token"),
   ]);
