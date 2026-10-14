@@ -46,3 +46,19 @@ for (const offerId of offerIds) {
 }
 assert.ok(source.includes('const sku = canonicalOffer('),
   'Legacy aliases must also be resolved when checkout identifies an offer by SKU');
+
+assert.ok(source.includes('payment_amount_or_currency_unresolved'),
+  'Unknown amount or currency must yield retryable failure');
+assert.ok(source.includes('amountTotal === null || currency === null'),
+  'Do not fabricate payment amounts when forwarding');
+assert.ok(!source.includes('amount: amountTotal ?? 0,'),
+  'Never forward an invented zero-dollar amount');
+assert.ok(!source.includes('currency: currency ?? "usd",'),
+  'Never forward an invented USD currency');
+for (const field of [
+  'commercial_offering_id', 'commercial_offer_id', 'canonical_price_id',
+  'entitlement_tier', 'provider_price_id', 'payment_role',
+  'business_owner', 'fulfillment_type',
+]) {
+  assert.ok(source.includes('"' + field + '"'), 'Missing live v11 metadata: ' + field);
+}
