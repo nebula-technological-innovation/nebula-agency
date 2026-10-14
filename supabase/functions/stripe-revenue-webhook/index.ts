@@ -276,6 +276,9 @@ Deno.serve(async (req: Request) => {
       if (!email) {
         return json(503, { error: "customer_email_unresolved", retryable: true });
       }
+      if (amountTotal === null || currency === null) {
+        return json(503, { error: "payment_amount_or_currency_unresolved", retryable: true });
+      }
       const paymentIntentId = stringId(session.payment_intent);
       const subscriptionId = stringId(session.subscription);
       if (!paymentIntentId && !subscriptionId) {
@@ -291,8 +294,8 @@ Deno.serve(async (req: Request) => {
           product_name: String(metadata.product_name ?? offerId),
           tier: String(metadata.entitlement_tier ?? (kind === "service" ? "service" : "digital")),
           fulfillment_type: kind === "service" ? "professional_service" : "digital_delivery",
-          amount: amountTotal ?? 0,
-          currency: currency ?? "usd",
+          amount: amountTotal,
+          currency,
           payment_intent_id: paymentIntentId,
           subscription_id: subscriptionId,
           checkout_session_id: session.id,
