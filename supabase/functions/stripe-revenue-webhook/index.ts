@@ -231,6 +231,15 @@ Deno.serve(async (req: Request) => {
       "mode",
       "payment_stage",
       "business_unit",
+      "business_owner",
+      "commercial_offering_id",
+      "commercial_offer_id",
+      "canonical_price_id",
+      "entitlement_tier",
+      "provider_price_id",
+      "payment_role",
+      "fulfillment",
+      "fulfillment_type",
     ]) {
       if (metadata[key] != null) safeMetadata[key] = metadata[key];
     }
