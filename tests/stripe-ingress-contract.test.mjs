@@ -14,6 +14,10 @@ for (const marker of [
   'forwardCanonicalEntitlement(admin, "/internal/payment-events"',
   'canonicalForwardFailure(error)',
   'canonical_forwarding: kind !== "unknown"',
+  '"ai-task-sprint"',
+  '"ai-native-website-launch-sprint"',
+  '"ai_native_website_launch_sprint": "ai-native-website-launch-sprint"',
+  'canonicalOffer(String(',
   'customer_email_unresolved',
   'payment_identity_unresolved',
   'verifyStripeSignature(raw',
@@ -34,3 +38,11 @@ assert.ok(!source.includes('canonicalStatus="not_configured"'),
   'Missing forwarding configuration must not be acknowledged as successfully delivered');
 assert.ok(source.split('\n').length > 400,
   'Do not replace the readable main webhook source with a shorter deployed snapshot');
+
+// The production checkout catalog includes both new and legacy service identifiers.
+const offerIds = ['ai-task-sprint', 'ai-native-website-launch-sprint'];
+for (const offerId of offerIds) {
+  assert.ok(source.includes('"' + offerId + '"'), 'Missing production service offer: ' + offerId);
+}
+assert.ok(source.includes('const sku = canonicalOffer('),
+  'Legacy aliases must also be resolved when checkout identifies an offer by SKU');
