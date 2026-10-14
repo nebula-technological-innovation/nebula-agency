@@ -21,7 +21,15 @@ const SERVICE_OFFERS = new Set([
   "automation_integration_sprint_deposit",
   "automation_integration_sprint",
   "strategy_architecture_discovery",
+  "ai-task-sprint",
+  "ai-native-website-launch-sprint",
 ]);
+
+// Preserve the legacy checkout identifier accepted by deployed v11.
+const OFFER_ALIASES: Record<string, string> = {
+  "ai_native_website_launch_sprint": "ai-native-website-launch-sprint",
+};
+const canonicalOffer = (value: string): string => OFFER_ALIASES[value] ?? value;
 
 const DIGITAL_OFFERS = new Set([
   "ai-automation-starter-kit",
@@ -190,10 +198,10 @@ Deno.serve(async (req: Request) => {
 
     const metadata = session.metadata ?? {};
     // Prefer verified checkout/offer identities without creating authority from an unknown SKU.
-    const offer = String(
+    const offer = canonicalOffer(String(
       metadata.commercial_offer_id ?? metadata.offer_id ?? metadata.offer ?? metadata.nebula_offer_id ?? "",
-    ).trim();
-    const sku = String(metadata.sku ?? metadata.product_id ?? "").trim();
+    ).trim());
+    const sku = canonicalOffer(String(metadata.sku ?? metadata.product_id ?? "").trim());
     const kind = SERVICE_OFFERS.has(offer) || SERVICE_OFFERS.has(sku)
       ? "service"
       : DIGITAL_OFFERS.has(sku) || DIGITAL_OFFERS.has(offer)
