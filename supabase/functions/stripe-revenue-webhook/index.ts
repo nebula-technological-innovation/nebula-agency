@@ -243,6 +243,8 @@ Deno.serve(async (req: Request) => {
     ]) {
       if (metadata[key] != null) safeMetadata[key] = metadata[key];
     }
+    // Match the deployed v11 canonical economic identity on replay and audit.
+    safeMetadata.canonical_offer_id = offerId;
 
     const intakePayload: Record<string, unknown> = {};
     if (kind === "service" && Array.isArray(session.custom_fields)) {
