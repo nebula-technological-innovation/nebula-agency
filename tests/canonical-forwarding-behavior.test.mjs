@@ -55,15 +55,31 @@ test('JSON 200 with not_configured or rejected cannot acknowledge fulfillment', 
   }
 });
 
+test('generic HTTP 200 cannot count as durable payment acknowledgment', async()=>{
+  for(const bad of [{},{ok:true},{status:'processed'},
+      {status:'processed',event_id:'evt_wrong',order_id:1},
+      {status:'processed',event_id:payload.event_id,order_id:null},
+      {status:'ignored',event_id:payload.event_id,order_id:3}]) {
+    await rejected(forwardCanonicalEntitlement(admin(),path,payload,async()=>response(bad)),
+      'canonical_entitlement_forward_failed');
+  }
+});
+
+test('duplicate durable order is accepted only for the matching event', async()=>{
+  const r = await forwardCanonicalEntitlement(admin(),path,payload,
+    async()=>response({status:'duplicate',event_id:payload.event_id,order_id:11}));
+  assert.equal(r.status,'duplicate');
+});
+
 test('successful mock acknowledgment carries stable idempotency key and original amount', async()=>{
   const seen=[];
   const call=async (url, init)=>{
     seen.push({url:String(url), headers:init.headers, body:JSON.parse(init.body)});
-    return response({ok:true,status:'accepted'});
+    return response({status:'processed',event_id:payload.event_id,order_id:17});
   };
   const one=await forwardCanonicalEntitlement(admin(),path,payload,call);
   const two=await forwardCanonicalEntitlement(admin(),path,payload,call);
-  assert.equal(one.status,'accepted');assert.equal(two.status,'accepted');
+  assert.equal(one.status,'processed');assert.equal(two.status,'processed');
   assert.equal(seen.length,2);
   for(const item of seen){
     assert.equal(item.headers['idempotency-key'],payload.event_id);
