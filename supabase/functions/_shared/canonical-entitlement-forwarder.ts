@@ -88,6 +88,14 @@ export async function forwardCanonicalEntitlement(
               .includes(status))) {
       throw new CanonicalForwardError("canonical_entitlement_forward_failed", response.status);
     }
+    // The canonical entitlement API confirms durable economic processing with
+    // an order id, matching event id and one of two terminal acceptance states.
+    // A generic HTTP 200/{} must not suppress Stripe retry delivery.
+    if (!(["processed", "duplicate"].includes(String(result.status)) &&
+          result.event_id === eventId && Number.isSafeInteger(result.order_id) &&
+          Number(result.order_id) > 0)) {
+      throw new CanonicalForwardError("canonical_entitlement_forward_failed", response.status);
+    }
     return result;
   }
   throw new CanonicalForwardError("canonical_entitlement_forward_failed", response.status);
