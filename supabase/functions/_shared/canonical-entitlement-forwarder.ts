@@ -70,16 +70,22 @@ export async function forwardCanonicalEntitlement(
   }
 
   const contentType = response.headers.get("content-type") ?? "";
-  if (!contentType.includes("application/json")) return { status: "accepted" };
+  // A reverse proxy's HTML 200 or empty response is not durable acknowledgment.
+  if (!contentType.includes("application/json"))
+    throw new CanonicalForwardError("canonical_entitlement_forward_failed", response.status);
   const body = await response.json();
   if (body && typeof body === "object" && !Array.isArray(body)) {
     const result = body as Record<string, unknown>;
     // A 2xx HTTP status is not proof of canonical fulfillment. Certain
     // integrations acknowledge transport while reporting a rejected event.
-    const status = String(result.status ?? result.canonical_status ?? "").toLowerCase();
+    const statuses = [result.status, result.canonical_status]
+      .filter((value): value is string => typeof value === "string")
+      .map((value) => value.toLowerCase());
     if (result.ok === false || result.success === false ||
-        result.error != null || ["not_configured", "failed", "error", "rejected",
-          "pending_review", "unauthorized"].includes(status)) {
+        result.error != null || statuses.some((status) =>
+          ["not_configured", "failed", "error", "rejected",
+            "pending_review", "unauthorized", "ignored", "not_applicable"]
+              .includes(status))) {
       throw new CanonicalForwardError("canonical_entitlement_forward_failed", response.status);
     }
     return result;
