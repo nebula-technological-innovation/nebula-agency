@@ -114,3 +114,22 @@ Deno.test("retry reuses the same idempotency key after transient failure", async
   await forwardCanonicalEntitlement(admin, "/internal/payment-events", payment, fetchMock);
   assertEquals(seen, [payment.event_id, payment.event_id]);
 });
+
+Deno.test("transport-level 200 with semantic rejection is retryable failure", async () => {
+  for (const payload of [
+    { status: "not_configured" }, { canonical_status: "rejected" },
+    { ok: false }, { success: false, error: "relay_offline" },
+    { status: "pending_review" },
+  ]) {
+    const fetchMock: FetchLike = async () => new Response(JSON.stringify(payload), {
+      status: 200, headers: { "content-type": "application/json" },
+    });
+    await assertRejects(
+      () => forwardCanonicalEntitlement(
+        client("https://canonical.example.test", "test-token"),
+        "/internal/payment-events", payment, fetchMock,
+      ),
+      CanonicalForwardError, "canonical_entitlement_forward_failed",
+    );
+  }
+});
