@@ -65,3 +65,29 @@ for (const field of [
 
 assert.ok(source.includes('safeMetadata.canonical_offer_id = offerId;'),
   'Provider record must preserve deployed v11 canonical_offer_id for audit and reconciliation');
+
+const paidInvoiceStart = source.indexOf('if (eventType === "invoice.paid")');
+const nextInvoiceBranch = source.indexOf('if (eventType === "invoice.payment_failed")', paidInvoiceStart);
+assert.ok(paidInvoiceStart >= 0 && nextInvoiceBranch > paidInvoiceStart,
+  'Must preserve both paid and failed invoice handlers');
+const paidInvoice = source.slice(paidInvoiceStart, nextInvoiceBranch);
+for (const marker of [
+  'non_nebula_invoice_ignored',
+  'subscription_identity_unresolved',
+  'missing_provider_identity',
+  'customer_email_unresolved',
+  'invoice_payment_amount_or_currency_unresolved',
+  'amount === null || currency === null',
+]) {
+  assert.ok(paidInvoice.includes(marker), 'Recognized paid invoice must fail closed: ' + marker);
+}
+assert.ok(!paidInvoice.includes('status: "software_identity_unresolved"'),
+  'Cannot permanently acknowledge a recognized invoice with missing subscription identity');
+assert.ok(!paidInvoice.includes('return json(200, { received: true, status: "customer_email_unresolved"'),
+  'Cannot swallow missing customer email on a recognized paid invoice');
+assert.ok(!paidInvoice.includes(': "usd";') && !paidInvoice.includes(': 0;'),
+  'Cannot invent default USD or zero-dollar values for Stripe paid invoices');
+const forwardInvoiceIndex = paidInvoice.indexOf('await forwardCanonicalEntitlement(admin, "/internal/payment-events"');
+const validationInvoiceIndex = paidInvoice.indexOf('amount === null || currency === null');
+assert.ok(forwardInvoiceIndex > validationInvoiceIndex,
+  'Reject missing paid amount/currency before forwarding an invoice event');
