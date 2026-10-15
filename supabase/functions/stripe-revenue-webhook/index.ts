@@ -338,19 +338,23 @@ Deno.serve(async (req: Request) => {
   if (eventType === "invoice.paid") {
     const subscriptionId = subscriptionIdFromInvoice(eventObject);
     const identity = softwareIdentityFromInvoice(eventObject);
-    if (!subscriptionId || !identity) return json(200, { received: true, status: "software_identity_unresolved" });
+    // Invoices with no Nebula product identity cannot grant access.
+    if (!identity) return json(200, { received: true, status: "non_nebula_invoice_ignored" });
+    // Once a Nebula product is identified, do not permanently acknowledge
+    // missing source/customer/payment identities. Stripe must be able to retry.
+    if (!subscriptionId) return json(503, { error: "subscription_identity_unresolved", retryable: true });
+    if (typeof event.id !== "string" || !event.id) return json(400, { error: "missing_provider_identity" });
 
     const email = String(eventObject.customer_email ?? "").trim().toLowerCase();
-    if (!email) return json(200, { received: true, status: "customer_email_unresolved" });
+    if (!email) return json(503, { error: "customer_email_unresolved", retryable: true });
 
     const amount = Number.isSafeInteger(eventObject.amount_paid) && eventObject.amount_paid >= 0
-      ? eventObject.amount_paid
-      : Number.isSafeInteger(eventObject.total) && eventObject.total >= 0
-        ? eventObject.total
-        : 0;
+      ? eventObject.amount_paid : null;
     const currency = typeof eventObject.currency === "string" && /^[a-z]{3}$/i.test(eventObject.currency)
-      ? eventObject.currency.toLowerCase()
-      : "usd";
+      ? eventObject.currency.toLowerCase() : null;
+    if (amount === null || currency === null) {
+      return json(503, { error: "invoice_payment_amount_or_currency_unresolved", retryable: true });
+    }
     const needsApiKey = identity.fulfillment === "api_key" || identity.sku.includes("api");
 
     try {
