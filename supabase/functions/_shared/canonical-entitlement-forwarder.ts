@@ -72,5 +72,17 @@ export async function forwardCanonicalEntitlement(
   const contentType = response.headers.get("content-type") ?? "";
   if (!contentType.includes("application/json")) return { status: "accepted" };
   const body = await response.json();
-  return body && typeof body === "object" ? body as Record<string, unknown> : { status: "accepted" };
+  if (body && typeof body === "object" && !Array.isArray(body)) {
+    const result = body as Record<string, unknown>;
+    // A 2xx HTTP status is not proof of canonical fulfillment. Certain
+    // integrations acknowledge transport while reporting a rejected event.
+    const status = String(result.status ?? result.canonical_status ?? "").toLowerCase();
+    if (result.ok === false || result.success === false ||
+        result.error != null || ["not_configured", "failed", "error", "rejected",
+          "pending_review", "unauthorized"].includes(status)) {
+      throw new CanonicalForwardError("canonical_entitlement_forward_failed", response.status);
+    }
+    return result;
+  }
+  throw new CanonicalForwardError("canonical_entitlement_forward_failed", response.status);
 }
