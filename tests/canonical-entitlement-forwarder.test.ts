@@ -120,6 +120,7 @@ Deno.test("transport-level 200 with semantic rejection is retryable failure", as
     { status: "not_configured" }, { canonical_status: "rejected" },
     { ok: false }, { success: false, error: "relay_offline" },
     { status: "pending_review" },
+    { status: "ignored" }, { status: "accepted", canonical_status: "not_configured" },
   ]) {
     const fetchMock: FetchLike = async () => new Response(JSON.stringify(payload), {
       status: 200, headers: { "content-type": "application/json" },
@@ -132,4 +133,17 @@ Deno.test("transport-level 200 with semantic rejection is retryable failure", as
       CanonicalForwardError, "canonical_entitlement_forward_failed",
     );
   }
+});
+
+Deno.test("HTML HTTP 200 is not proof of canonical fulfillment", async () => {
+  const fetchMock: FetchLike = async () => new Response("<html>proxy</html>", {
+    status: 200, headers: { "content-type": "text/html" },
+  });
+  await assertRejects(
+    () => forwardCanonicalEntitlement(
+      client("https://canonical.example.test", "test-token"),
+      "/internal/payment-events", payment, fetchMock,
+    ),
+    CanonicalForwardError, "canonical_entitlement_forward_failed",
+  );
 });
