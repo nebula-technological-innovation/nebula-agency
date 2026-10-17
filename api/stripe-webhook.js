@@ -1,6 +1,8 @@
 import crypto from 'node:crypto';
 
 function timingSafeEqualHex(a, b) {
+  // Node's hex decoder silently accepts valid prefixes before non-hex suffixes.
+  if (!/^[a-f0-9]{64}$/i.test(a) || !/^[a-f0-9]{64}$/i.test(b)) return false;
   try {
     const ab = Buffer.from(a, 'hex');
     const bb = Buffer.from(b, 'hex');
