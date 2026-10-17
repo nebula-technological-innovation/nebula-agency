@@ -85,9 +85,14 @@ async function verifyStripeSignature(raw: string, header: string | null, secret:
   const timestampPart = parts.find((p) => p.startsWith("t="));
   const signatures = parts.filter((p) => p.startsWith("v1=")).map((p) => p.slice(3));
   if (!timestampPart || signatures.length === 0) return false;
-  const timestamp = Number(timestampPart.slice(2));
-  if (!Number.isFinite(timestamp) || Math.abs(Math.floor(Date.now() / 1000) - timestamp) > 300) return false;
-  const expected = await hmacSha256Hex(secret, `${timestamp}.${raw}`);
+  // Stripe timestamps are decimal integer seconds, not JS numeric expressions or fractions.
+  const rawTimestamp = timestampPart.slice(2);
+  if (!/^[0-9]{1,12}$/.test(rawTimestamp)) return false;
+  const timestamp = Number(rawTimestamp);
+  if (!Number.isSafeInteger(timestamp) || Math.abs(Math.floor(Date.now() / 1000) - timestamp) > 300) return false;
+  // Refuse malformed/truncated hex instead of relying on permissive conversion.
+  if (signatures.some((signature) => !/^[0-9a-f]{64}$/i.test(signature))) return false;
+  const expected = await hmacSha256Hex(secret, `${rawTimestamp}.${raw}`);
   return signatures.some((sig) => constantTimeEqualHex(sig, expected));
 }
 
