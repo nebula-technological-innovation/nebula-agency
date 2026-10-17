@@ -10,10 +10,14 @@ export default function handler(req, res) {
       database_url: present('DATABASE_URL') || present('POSTGRES_URL') || present('SUPABASE_URL') || present('NEON_DATABASE_URL'),
       entitlement_event_token: present('ENTITLEMENT_EVENT_TOKEN'),
     },
-    ready_for_signed_webhooks:
-      present('STRIPE_WEBHOOK_SECRET') &&
-      (present('DATABASE_URL') || present('POSTGRES_URL') || present('SUPABASE_URL') || present('NEON_DATABASE_URL')),
-    note: 'Presence-only readiness check. Secret values are never returned.',
+    // This compatibility handler validates signatures, but cannot durably
+    // persist or acknowledge paid Checkout events. Configuration presence is
+    // not payment fulfillment readiness; never green-light revenue from it.
+    stripe_signature_verification_configured: present('STRIPE_WEBHOOK_SECRET'),
+    ready_for_signed_webhooks: false,
+    durable_order_repository_ready: false,
+    ready_for_paid_checkout: false,
+    note: 'Compatibility only: signed paid checkouts fail closed with HTTP 503. Credential presence is not an economic release gate. Secret values are never returned.',
     timestamp: new Date().toISOString(),
   });
 }
