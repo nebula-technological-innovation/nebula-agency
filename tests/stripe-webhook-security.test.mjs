@@ -1,7 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
-import handler from '../api/stripe-webhook.js';
+import { readFileSync } from 'node:fs';
+
+// Load the actual module as ESM without relying on a package.json type setting.
+const actualSource = readFileSync(new URL('../api/stripe-webhook.js', import.meta.url), 'utf8');
+const { default: handler } = await import('data:text/javascript,' + encodeURIComponent(actualSource));
 
 // Synthetic only; this fixture never contacts Stripe or a database.
 const SECRET = 'offline-synthetic-test-secret-not-for-production';
