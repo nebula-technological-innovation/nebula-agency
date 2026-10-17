@@ -15,10 +15,11 @@ function sign(raw, timestamp = Math.floor(Date.now() / 1000)) {
 }
 async function runCase({ method = 'POST', raw = JSON.stringify(makeEvent()), header, db = true, secret = true } = {}) {
   const originalSecret = process.env.STRIPE_WEBHOOK_SECRET;
-  const originalDb = process.env.DATABASE_URL;
+  const dbKeys = ['DATABASE_URL', 'POSTGRES_URL', 'SUPABASE_URL', 'NEON_DATABASE_URL'];
+  const originalDbs = Object.fromEntries(dbKeys.map((key) => [key, process.env[key]]));
   if (secret) process.env.STRIPE_WEBHOOK_SECRET = SECRET; else delete process.env.STRIPE_WEBHOOK_SECRET;
+  for (const key of dbKeys) delete process.env[key];
   if (db) process.env.DATABASE_URL = 'postgresql://127.0.0.1:65535/synthetic-nonreachable';
-  else delete process.env.DATABASE_URL;
   const req = {
     method, headers: { 'stripe-signature': header === undefined ? sign(raw).header : header },
     async *[Symbol.asyncIterator]() { yield Buffer.from(raw); },
@@ -34,8 +35,10 @@ async function runCase({ method = 'POST', raw = JSON.stringify(makeEvent()), hea
   finally {
     if (originalSecret === undefined) delete process.env.STRIPE_WEBHOOK_SECRET;
     else process.env.STRIPE_WEBHOOK_SECRET = originalSecret;
-    if (originalDb === undefined) delete process.env.DATABASE_URL;
-    else process.env.DATABASE_URL = originalDb;
+    for (const key of dbKeys) {
+      if (originalDbs[key] === undefined) delete process.env[key];
+      else process.env[key] = originalDbs[key];
+    }
   }
 }
 
