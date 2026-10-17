@@ -91,3 +91,13 @@ const forwardInvoiceIndex = paidInvoice.indexOf('await forwardCanonicalEntitleme
 const validationInvoiceIndex = paidInvoice.indexOf('amount === null || currency === null');
 assert.ok(forwardInvoiceIndex > validationInvoiceIndex,
   'Reject missing paid amount/currency before forwarding an invoice event');
+
+// Security guard: malformed timestamps and signature encodings must fail before HMAC comparison.
+for (const marker of [
+  '/^[0-9]{1,12}$/.test(rawTimestamp)',
+  'Number.isSafeInteger(timestamp)',
+  '/^[0-9a-f]{64}$/i.test(signature)',
+  '${rawTimestamp}.${raw}',
+]) {
+  assert.ok(source.includes(marker), 'Missing strict Stripe HMAC guard: ' + marker);
+}
