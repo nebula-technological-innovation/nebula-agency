@@ -1,3 +1,10 @@
+/**
+ * Send an uncached HTTP 200 JSON snapshot of configuration presence.
+ *
+ * Credentials and database connectivity are not validated, and secret values
+ * are omitted. Webhook, durable repository, and paid checkout readiness are
+ * always false, regardless of configuration.
+ */
 export default function handler(req, res) {
   const present = (name) => Boolean(process.env[name]);
 

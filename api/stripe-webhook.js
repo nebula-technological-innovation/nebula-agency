@@ -1,5 +1,11 @@
 import crypto from 'node:crypto';
 
+/**
+ * Compare SHA-256 hex digest strings using a timing-safe byte comparison.
+ *
+ * Accepts either hex letter case. Returns false for rejected hex formats,
+ * unequal decoded digests, or decoding/comparison errors.
+ */
 function timingSafeEqualHex(a, b) {
   // Node's hex decoder silently accepts valid prefixes before non-hex suffixes.
   if (!/^[a-f0-9]{64}$/i.test(a) || !/^[a-f0-9]{64}$/i.test(b)) return false;
