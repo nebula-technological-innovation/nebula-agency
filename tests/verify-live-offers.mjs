@@ -3,6 +3,7 @@ import fs from 'node:fs';
 const expected = new Map(Object.entries({
   'atlas-assessment': 'https://book.stripe.com/4gM9AU8xJdHmgZQ77vbMQ0w',
   strategy_architecture_discovery: 'https://book.stripe.com/8x2cN6bJV5aQfVM77vbMQ0c',
+  'ai-task-sprint': 'https://book.stripe.com/3cI14o7tFfPuaBsbnLbMQ0z',
   automation_integration_sprint: 'https://book.stripe.com/00w9AU9BNeLqeRI77vbMQ0d',
   technical_documentation_sprint: 'https://book.stripe.com/5kQ4gAeW7gTycJAbnLbMQ0e',
   data_integration_assessment: 'https://book.stripe.com/cNi4gAg0b5aQaBsdvTbMQ0j',
@@ -56,8 +57,8 @@ for (const offer of expected.keys()) {
   }
 }
 
-if (expected.size !== 16) {
-  throw new Error(`expected 16 verified offers, found ${expected.size}`);
+if (expected.size !== 17) {
+  throw new Error(`expected 17 verified offers, found ${expected.size}`);
 }
 
 console.log(JSON.stringify({
