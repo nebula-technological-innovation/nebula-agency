@@ -36,3 +36,18 @@ test('links to real source pages without bypassing payment gates', () => {
   assert.doesNotMatch(html, /\/api\/go\?/);
   assert.match(html, /Release-gated purchase policy/);
 });
+
+test('offers routes receive scoped security headers', () => {
+  for (const route of ['/offers', '/offers/']) {
+    const rule = config.headers.find((item) => item.source === route);
+    assert.ok(rule, 'Missing scoped headers for ' + route);
+    const headers = Object.fromEntries(rule.headers.map(({ key, value }) => [key.toLowerCase(), value]));
+    assert.equal(headers['x-content-type-options'], 'nosniff');
+    assert.equal(headers['x-frame-options'], 'DENY');
+    assert.equal(headers['referrer-policy'], 'strict-origin-when-cross-origin');
+    assert.match(headers['content-security-policy'], /frame-ancestors 'none'/);
+    assert.match(headers['content-security-policy'], /form-action 'none'/);
+    assert.match(headers['permissions-policy'], /camera=\(\)/);
+  }
+  assert.equal(config.headers.length, 2, 'Do not change API response header behavior unintentionally');
+});
