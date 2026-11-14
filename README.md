@@ -1,46 +1,59 @@
-# Nebula AI Infrastructure & Security Automation Agency
+# Nebula Technological Innovation
+### AI-native business automation, AetherTech AI, and developer infrastructure
 
-## Commercial status
+**Nebula Technological Innovation** is a founder-led technology business based in Colorado, United States. We design and develop software that helps organizations evaluate, build, and operate AI-assisted workflows, with an emphasis on accountable automation, integration boundaries, and practical delivery.
 
-Nebula's governed service offers and digital operator kits are active through the production Stripe → Supabase revenue path.
+Our work spans business automation, AI application infrastructure, developer experiences, and security-oriented tooling. **AetherTech AI** is a major product and research family within the Nebula portfolio.
 
-### Service offers
+> **Product-status note:** This repository describes an active engineering and commercialization program. A feature's presence in source code, a demo, a payment link, or an isolated test does not by itself establish a generally available, independently certified, or revenue-producing production service.
 
-Paid service checkouts are signature-verified, written to the durable revenue ledger, and atomically create intake + Customer Ops work-order state. Duplicate Stripe deliveries converge safely rather than creating duplicate work.
+## What we work on
 
-### Operator kits
+| Area | Focus | Public maturity statement |
+| --- | --- | --- |
+| **Business automation and consulting** | Workflow discovery, architecture assessments, bounded AI implementation | Engagements are qualified and scoped individually |
+| **AetherTech AI** | Model gateways, AI-assisted applications, multi-model integration | Active engineering; availability varies by component |
+| **Atlas and agent operations** | Orchestration, tool access, approvals, and operational workflows | Development and validation |
+| **Developer tools** | Aether IDE, Helix, SDKs, and coding workflows | Development and release-gate validation |
+| **Security and infrastructure** | Draco security tooling, identity, metering, and governed operations | Component-specific validation |
+| **Research and prototypes** | Nebula OS, Aether Lens, device and cloud concepts | Research and prototype tracks; not advertised as generally available |
 
-Eight digital products are live with verified automated fulfillment:
+## Working with Nebula
 
-| Product | Price | Checkout |
-|---|---:|---|
-| Agent Ops Pack | $79 | https://buy.stripe.com/14A4gA01d46M9xo4ZnbMQ0m |
-| Collections Pack | $39 | https://buy.stripe.com/eVqaEY3dp0UAcJAcrPbMQ0n |
-| Ship Gate Pack | $49 | https://buy.stripe.com/eVq9AUg0beLqaBsdvTbMQ0o |
-| Offer Math Workbook | $29 | https://buy.stripe.com/3cIdRa8xJfPubFw77vbMQ0p |
-| Client Handoff Pack | $49 | https://buy.stripe.com/eVq28sdS30UA7pg1NbbMQ0q |
-| Review Relay | See Stripe | https://buy.stripe.com/28EdRa15hdHm6lcbnLbMQ0t |
-| After Hours Kit | See Stripe | https://buy.stripe.com/8x2dRabJV1YEeRIezXbMQ0s |
-| Site Sprint Kit | $149 | https://buy.stripe.com/6oU14o7tFavadNEdvTbMQ0r |
+We currently describe two service paths on our company website:
 
-After successful Checkout, Stripe redirects the buyer to Nebula secure delivery with the Checkout Session ID. The delivery endpoint requires the same checkout email, validates it against the stored hash, serves only the bundle associated with that paid session, marks the order delivered, and records a fulfillment outbox event.
+- **Strategy & Architecture Discovery** — publicly advertised at **$250**, subject to scope, terms, and checkout verification.
+- **Atlas AI Automation Assessment** — publicly advertised at **$2,500** for qualified engagements, subject to a written scope and delivery plan.
 
-A Stripe-signed non-revenue validation event exercised the real delivery HTTP path successfully (`200`, `application/zip`) and the isolated validation order was removed afterward.
+For an initial conversation, see **[Nebula HQ](https://nebulahq.work/)**. Do not assume a product is purchasable or ready for fulfillment merely because an older catalog, repository, or payment-link record exists.
 
-### Recurring software
+### Digital operator kits
 
-Recurring software Payment Links remain intentionally disabled until the consuming applications enforce the production entitlement ledger. Backend entitlement lifecycle support is implemented: `invoice.paid` grants/renews access; failed invoices move access to `past_due`; cancellation/negative subscription changes update entitlement state. Trial or merely-active subscription state does not count as paid revenue.
+Our development catalog includes Agent Ops Pack, Collections Pack, Ship Gate Pack, Offer Math Workbook, Client Handoff Pack, Review Relay, After Hours Kit, and Site Sprint Kit. **Individual purchase and fulfillment readiness must be independently confirmed before any kit is represented as available for immediate paid delivery.** Prior technical and signed-event tests are distinct from verified customer transactions.
 
----
+## Engineering principles
 
-**Status**: Revenue activation / governed commercialization
+- **Human-governed automation:** consequential actions should respect explicit approval and authorization boundaries.
+- **Evidence-led releases:** build, security, payment, fulfillment, and deployment claims require specific verification.
+- **Flexible AI architecture:** design for local and hosted model choices, rather than an unverified single-model dependency.
+- **Secure-by-design intent:** identity, secrets, data boundaries, and auditability are engineering priorities; this does not imply a third-party security certification.
+- **Capability preservation:** mature functionality, prototypes, and historical source should be distinguished instead of silently conflated.
 
-## Quick Links
+## GitHub and source availability
 
-- **[Execution Plan](./docs/AGENCY_EXECUTION_PLAN.md)** - 30-day roadmap
-- **[GitHub Security Audit](./sales-ops/GITHUB_SECURITY_AUDIT_CHECKLIST.md)** - Lead generation tool
-- **[Lead Tracking](./sales-ops/LEAD_TRACKING_TEMPLATE.md)** - Sales operations
-- **[Discovery Calls](./sales-ops/DISCOVERY_CALL_GUIDE.md)** - Sales script
-- **[Content Plan](./sales-ops/FIRST_WEEK_CONTENT_PLAN.md)** - LinkedIn posts
-- **[Landing Page](./landing-pages/agency/)** - Agency website
-- **[Operator kits](./landing-pages/operator-kits.html)** - live secure digital fulfillment
+This is a **public-facing business and documentation repository**. Most engineering source lives in other repositories, including private workspaces, and should not be inferred to be open source. Examples, prototypes, templates, and design documents may be at different lifecycle stages. Each repository or package is subject to its own license and third-party notices.
+
+**Website:** [nebulahq.work](https://nebulahq.work/)  
+**GitHub organization:** [nebula-technological-innovation](https://github.com/nebula-technological-innovation)
+
+## Repository navigation
+
+- [Execution plan](./docs/AGENCY_EXECUTION_PLAN.md)
+- [Security audit checklist](./sales-ops/GITHUB_SECURITY_AUDIT_CHECKLIST.md)
+- [Lead tracking template](./sales-ops/LEAD_TRACKING_TEMPLATE.md)
+- [Discovery call guide](./sales-ops/DISCOVERY_CALL_GUIDE.md)
+- [Content plan](./sales-ops/FIRST_WEEK_CONTENT_PLAN.md)
+- [Agency landing-page source](./landing-pages/agency/)
+- [Operator-kit landing-page source](./landing-pages/operator-kits.html)
+
+**Commercial and investor diligence:** Product maturity, legal ownership, licensing, payment and fulfillment evidence, and financial performance should be supported by dated records and independently evaluated where required. No revenue figure, valuation, customer count, third-party certification, or unrestricted IP ownership claim is asserted by this README.
