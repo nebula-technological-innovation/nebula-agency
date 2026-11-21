@@ -4,7 +4,7 @@
 
 - Existing commercial site: `https://nebularoe.com` (Vercel Hobby; needs migration before commercial production).
 - **Read-only, noindex preview**: `https://nebula-agency-cloudflare-review.pages.dev/`.
-- Cloudflare Pages project: `nebula-agency-cloudflare-review`, deployment `af13a4c6-e3e6-43f2-9e82-0d67a6ff4162`.
+- Cloudflare Pages project: `nebula-agency-cloudflare-review`, deployment `f773e801-7c47-48db-b95b-c41d03b508f5`.
 - Origin: direct-upload advanced-mode Worker (not Git-linked). A new Git-linked project was rejected because the Cloudflare Pages Git installation returned API error `8000011`. Do not assume pushing this branch updates Pages automatically.
 - Preview contains only home, offers, contact, Strategy Discovery and Atlas Assessment pages, plus a release-held offer redirect and informational status. The full catalog, legal text, and payments are **not** released.
 - The live `nebularoe.com` custom domain remains unchanged; no mail DNS records were modified.
@@ -16,10 +16,10 @@ Exact file blob SHA snapshots used to build the preview:
 
 | Source | Blob SHA |
 | --- | --- |
-| `index.html` | `155f242ca98f48f64a4dfdbdceec3b4ced117e75` |
+| `index.html` | `b8b7e105cf6dcdf4ca1a335c461e6bd1fbd64d1b` |
 | `offers/index.html` | `104cbd1f08fde1ccf41dc0385df376f00be3e842` |
-| `landing-pages/services/strategy-architecture-discovery.html` | `419ac5f0c2b15e5b35a4b54ba0f047c63b1e9125` |
-| `landing-pages/services/atlas-ai-automation-assessment.html` | `71212c46e48776ee66f40edffce6eb615faef783` |
+| `landing-pages/services/strategy-architecture-discovery.html` | `b6330b0d4ae9a19500e125719d78c2f4ca268575` |
+| `landing-pages/services/atlas-ai-automation-assessment.html` | `d2a5f6e4b40e5e36f87961392922f6a667e0db11` |
 
 Independent HTTP probes: `/`, `/offers`, `/contact`, and `/landing-pages/services/strategy-architecture-discovery.html` returned 200. The `/api/go?offer=atlas-assessment` route redirected 303 back to the qualification page; `/api/revenue-status` returned 200 informational JSON; a nonexistent path returned 404. Preview responses include noindex protection.
 
