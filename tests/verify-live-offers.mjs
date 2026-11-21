@@ -23,7 +23,7 @@ const router = fs.readFileSync('api/go.js', 'utf8');
 for (const [offer, url] of expected) {
   if (!router.includes(`'${offer}': '${url}'`) &&
       !router.includes(`${offer}: '${url}'`)) {
-    throw new Error(`verified offer mapping missing or drifted: ${offer}`);
+    throw new Error(`mapped offer destination missing or drifted: ${offer}`);
   }
 }
 
@@ -50,18 +50,13 @@ for (const offer of referenced) {
   }
 }
 
-for (const offer of expected.keys()) {
-  if (!referenced.includes(offer)) {
-    throw new Error(`verified live offer is not customer-facing: ${offer}`);
-  }
-}
-
 if (expected.size !== 16) {
-  throw new Error(`expected 16 verified offers, found ${expected.size}`);
+  throw new Error(`expected 16 mapped destinations for audit, found ${expected.size}`);
 }
 
 console.log(JSON.stringify({
   status: 'PASS',
-  verified_offer_count: expected.size,
-  customer_facing_offer_count: new Set(referenced).size,
+  mapped_destinations_not_approved: expected.size,
+  referenced_offer_count: new Set(referenced).size,
+  commercial_release: 'HOLD',
 }));
