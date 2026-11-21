@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { OFFER_DESTINATIONS } from '../api/_offer-catalog.mjs';
 
 const expected = new Map(Object.entries({
   'atlas-assessment': 'https://book.stripe.com/4gM9AU8xJdHmgZQ77vbMQ0w',
@@ -20,9 +21,11 @@ const expected = new Map(Object.entries({
 }));
 
 const router = fs.readFileSync('api/go.js', 'utf8');
+if (!router.includes('commercialRedirectApproved') || !router.includes('_offer-catalog.mjs')) {
+  throw new Error('commercial release gate or shared catalog missing from public router');
+}
 for (const [offer, url] of expected) {
-  if (!router.includes(`'${offer}': '${url}'`) &&
-      !router.includes(`${offer}: '${url}'`)) {
+  if (OFFER_DESTINATIONS[offer] !== url) {
     throw new Error(`mapped offer destination missing or drifted: ${offer}`);
   }
 }
