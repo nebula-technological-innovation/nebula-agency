@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import { commercialRedirectApproved } from './_commercial-release.mjs';
 
 const OFFERS = {
   'atlas-assessment': 'https://book.stripe.com/4gM9AU8xJdHmgZQ77vbMQ0w',
@@ -66,6 +67,13 @@ export default async function handler(req, res) {
   const offerId = clean(req.query.offer, '', 80);
   const destination = OFFERS[offerId];
   if (!destination) return res.status(404).json({ error: 'unknown_offer' });
+
+  // Release holds override static link mappings and marketing attribution.
+  // A stale/inactive Stripe URL must never become an authorized checkout.
+  if (!commercialRedirectApproved(offerId, destination, process.env)) {
+    res.setHeader('X-Nebula-Commercial-State', 'release-held');
+    return res.redirect(303, '/offers?status=qualification_required');
+  }
 
   const existing = String(req.headers.cookie || '').match(/(?:^|; )nebula_anon=([a-zA-Z0-9_-]{12,80})/);
   const anonymousId = existing?.[1] || crypto.randomBytes(12).toString('base64url');
