@@ -5,32 +5,32 @@ const services = [
   {
     name: 'AI & Automation Consulting',
     description: 'Strategy, architecture, workflow automation, deployment planning, and production-readiness assessments.',
-    href: 'https://book.stripe.com/8x2cN6bJV5aQfVM77vbMQ0c',
+    href: 'mailto:christianroe@roeacquisitions.net?subject=Nebula%20consulting%20qualification%20request',
   },
   {
     name: 'Engineering & Automation',
     description: 'API integrations, MCP systems, CI/CD, business automation, cloud operations, and codebase modernization.',
-    href: 'https://book.stripe.com/00w9AU9BNeLqeRI77vbMQ0d',
+    href: 'mailto:christianroe@roeacquisitions.net?subject=Nebula%20consulting%20qualification%20request',
   },
   {
     name: 'Technical & Business Documentation',
     description: 'Architecture documents, implementation runbooks, SOPs, technical specifications, and operating documentation.',
-    href: 'https://book.stripe.com/5kQ4gAeW7gTycJAbnLbMQ0e',
+    href: 'mailto:christianroe@roeacquisitions.net?subject=Nebula%20consulting%20qualification%20request',
   },
   {
     name: 'Data & Integration Assessment',
     description: 'Data cleanup, migration, reporting, analytics, RAG preparation, and systems-integration planning.',
-    href: 'https://book.stripe.com/cNi4gAg0b5aQaBsdvTbMQ0j',
+    href: 'mailto:christianroe@roeacquisitions.net?subject=Nebula%20consulting%20qualification%20request',
   },
   {
     name: 'Defensive Security Assessment',
     description: 'Authorized code and security review, dependency/SBOM analysis, secret-pattern review, and remediation planning.',
-    href: 'https://book.stripe.com/8x23cw15h0UAfVMcrPbMQ0k',
+    href: 'mailto:christianroe@roeacquisitions.net?subject=Nebula%20consulting%20qualification%20request',
   },
   {
     name: 'B2B Revenue Operations Sprint',
     description: 'ICP and offer positioning, CRM workflow design, lifecycle messaging, sales enablement, SEO/content systems, and funnel instrumentation.',
-    href: 'https://book.stripe.com/3cI7sM9BNcDi24W77vbMQ0l',
+    href: 'mailto:christianroe@roeacquisitions.net?subject=Nebula%20consulting%20qualification%20request',
   },
 ];
 
@@ -57,7 +57,7 @@ export default function Home() {
         <div className="max-w-5xl mx-auto text-center">
           <p className="text-cyan-300 font-semibold mb-4">Nebula Technological Innovation</p>
           <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6">
-            Production services you can engage today.
+            Professional services available for qualification.
           </h1>
           <p className="text-xl text-slate-300 max-w-3xl mx-auto mb-8">
             AI strategy, engineering, automation, documentation, data integration, defensive security, and B2B revenue operations delivered as scoped professional engagements.
@@ -73,14 +73,14 @@ export default function Home() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold mb-3">Live service offers</h2>
-            <p className="text-slate-400">Secure hosted checkout through Stripe. Each purchase includes intake information so fulfillment starts from a defined scope.</p>
+            <p className="text-slate-400">Request a scoped consultation. Payment and fulfillment remain subject to approved release controls.</p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {services.map((service) => (
               <motion.article key={service.name} whileHover={{ y: -4 }} className="bg-slate-800/70 border border-slate-700 rounded-2xl p-7 flex flex-col">
                 <h3 className="text-xl font-bold text-cyan-300 mb-3">{service.name}</h3>
                 <p className="text-slate-300 leading-relaxed flex-1">{service.description}</p>
-                <a href={service.href} target="_blank" rel="noreferrer" className="mt-6 inline-flex justify-center px-5 py-3 bg-white text-slate-950 rounded-lg font-bold hover:bg-slate-200 transition">Start engagement</a>
+                <a href={service.href} target="_blank" rel="noreferrer" className="mt-6 inline-flex justify-center px-5 py-3 bg-white text-slate-950 rounded-lg font-bold hover:bg-slate-200 transition">Request availability — engagement</a>
               </motion.article>
             ))}
           </div>
