@@ -9,6 +9,7 @@ on:
       - 'landing-pages/**'
       - 'tests/verify-live-offers.mjs'
       - 'tests/verify-commercial-release-gate.mjs'
+      - 'tests/verify-pages-routes.mjs'
       - '.github/workflows/live-offer-contract.yml'
   push:
     branches: [main]
@@ -19,6 +20,7 @@ on:
       - 'landing-pages/**'
       - 'tests/verify-live-offers.mjs'
       - 'tests/verify-commercial-release-gate.mjs'
+      - 'tests/verify-pages-routes.mjs'
       - '.github/workflows/live-offer-contract.yml'
   workflow_dispatch:
 
@@ -35,3 +37,5 @@ jobs:
         run: node tests/verify-live-offers.mjs
       - name: Verify fail-closed commercial release policy
         run: node tests/verify-commercial-release-gate.mjs
+      - name: Verify Cloudflare Pages simulated checkout routes
+        run: node tests/verify-pages-routes.mjs
