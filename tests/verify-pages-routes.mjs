@@ -29,26 +29,41 @@ for (const query of [
 }
 const ev = Object.fromEntries(REQUIRED_EVIDENCE.map(k => [k, 'synthetic://evidence/' + k]));
 const offer = 'atlas-assessment';
-const manifest = { version: 1, offers: [{
-  id: offer, decision: 'OWNER_APPROVED',
-  stripe_url: OFFER_DESTINATIONS[offer],
-  approval_id: 'synthetic-approval-001', approved_at: '2026-11-21T00:00:00Z',
-  evidence: ev
+const seller = 'acct_SYNTHETIC123456789012';
+const secret = 'synthetic-only-hmac-secret-never-use-for-real-releases-123';
+const now = Date.now();
+const manifest = { version:2, offers:[{
+  id:offer, decision:'OWNER_APPROVED', stripe_url:OFFER_DESTINATIONS[offer],
+  seller_account:seller, approval_id:'synthetic-approval-001',
+  approved_at:new Date(now-3600000).toISOString(),
+  expires_at:new Date(now+86400000).toISOString(), evidence:ev
 }] };
-const approvedEnv = { NEBULA_COMMERCIAL_RELEASE_MODE:'approved', NEBULA_COMMERCIAL_RELEASE_MANIFEST:JSON.stringify(manifest) };
+const signingKey = await crypto.subtle.importKey('raw',new TextEncoder().encode(secret),{name:'HMAC',hash:'SHA-256'},false,['sign']);
+const signature = async m => Array.from(new Uint8Array(await crypto.subtle.sign('HMAC',signingKey,new TextEncoder().encode(JSON.stringify(m)))),x=>x.toString(16).padStart(2,'0')).join('');
+const approvedEnv = {
+  NEBULA_COMMERCIAL_RELEASE_MODE:'approved',
+  NEBULA_COMMERCIAL_RELEASE_MANIFEST:JSON.stringify(manifest),
+  NEBULA_COMMERCIAL_RELEASE_HMAC_SECRET:secret,
+  NEBULA_COMMERCIAL_RELEASE_HMAC_SHA256:await signature(manifest),
+  NEBULA_COMMERCIAL_SELLER_ACCOUNT:seller
+};
 const syntheticallyApproved = await invoke('?offer=' + offer, approvedEnv);
-assert.equal(syntheticallyApproved.status, 302);
-assert.equal(syntheticallyApproved.headers.get('location'), OFFER_DESTINATIONS[offer]);
-assert.equal(syntheticallyApproved.headers.get('x-nebula-commercial-state'), 'owner-approved');
-const unrelatedHeld = await invoke('?offer=agent-ops-pack', approvedEnv);
-assert.equal(unrelatedHeld.status, 303);
+assert.equal(syntheticallyApproved.status,302);
+assert.equal(syntheticallyApproved.headers.get('location'),OFFER_DESTINATIONS[offer]);
+assert.equal(syntheticallyApproved.headers.get('x-nebula-commercial-state'),'owner-approved');
+const unrelatedHeld = await invoke('?offer=agent-ops-pack',approvedEnv);
+assert.equal(unrelatedHeld.status,303);
 const tampered = structuredClone(manifest);
 tampered.offers[0].stripe_url = 'https://evil.example/checkout';
-const denied = await invoke('?offer=' + offer, {
+const denied = await invoke('?offer=' + offer,{
   ...approvedEnv,
-  NEBULA_COMMERCIAL_RELEASE_MANIFEST: JSON.stringify(tampered)
+  NEBULA_COMMERCIAL_RELEASE_MANIFEST:JSON.stringify(tampered)
 });
-assert.equal(denied.status, 303);
+assert.equal(denied.status,303);
+const missingSignature = await invoke('?offer=' + offer,{
+  ...approvedEnv,NEBULA_COMMERCIAL_RELEASE_HMAC_SHA256:''
+});
+assert.equal(missingSignature.status,303);
 const info = await readiness();
 assert.equal(info.status, 200);
 assert.equal(info.headers.get('cache-control'), 'no-store');
