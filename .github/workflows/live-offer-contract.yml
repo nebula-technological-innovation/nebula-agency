@@ -11,6 +11,9 @@ on:
       - 'tests/verify-commercial-release-gate.mjs'
       - 'tests/verify-pages-routes.mjs'
       - 'tests/verify-public-release-copy.mjs'
+      - 'tests/verify-cloudflare-preview-bundle.mjs'
+      - 'scripts/build-cloudflare-review.mjs'
+      - 'guides/**'
       - '.github/workflows/live-offer-contract.yml'
   push:
     branches: [main]
@@ -23,6 +26,9 @@ on:
       - 'tests/verify-commercial-release-gate.mjs'
       - 'tests/verify-pages-routes.mjs'
       - 'tests/verify-public-release-copy.mjs'
+      - 'tests/verify-cloudflare-preview-bundle.mjs'
+      - 'scripts/build-cloudflare-review.mjs'
+      - 'guides/**'
       - '.github/workflows/live-offer-contract.yml'
   workflow_dispatch:
 
@@ -43,3 +49,5 @@ jobs:
         run: node tests/verify-pages-routes.mjs
       - name: Verify marketing pages do not bypass checkout releases
         run: node tests/verify-public-release-copy.mjs
+      - name: Build and execute all Cloudflare review pages without provider access
+        run: node tests/verify-cloudflare-preview-bundle.mjs
