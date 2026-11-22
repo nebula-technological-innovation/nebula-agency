@@ -10,6 +10,7 @@ on:
       - 'tests/verify-live-offers.mjs'
       - 'tests/verify-commercial-release-gate.mjs'
       - 'tests/verify-pages-routes.mjs'
+      - 'tests/verify-public-release-copy.mjs'
       - '.github/workflows/live-offer-contract.yml'
   push:
     branches: [main]
@@ -21,6 +22,7 @@ on:
       - 'tests/verify-live-offers.mjs'
       - 'tests/verify-commercial-release-gate.mjs'
       - 'tests/verify-pages-routes.mjs'
+      - 'tests/verify-public-release-copy.mjs'
       - '.github/workflows/live-offer-contract.yml'
   workflow_dispatch:
 
@@ -39,3 +41,5 @@ jobs:
         run: node tests/verify-commercial-release-gate.mjs
       - name: Verify Cloudflare Pages simulated checkout routes
         run: node tests/verify-pages-routes.mjs
+      - name: Verify marketing pages do not bypass checkout releases
+        run: node tests/verify-public-release-copy.mjs
