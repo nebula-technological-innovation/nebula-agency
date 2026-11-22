@@ -52,7 +52,7 @@ export default async function handler(req, res) {
 
   // Release holds override static link mappings and marketing attribution.
   // A stale/inactive Stripe URL must never become an authorized checkout.
-  if (!commercialRedirectApproved(offerId, destination, process.env)) {
+  if (!(await commercialRedirectApproved(offerId, destination, process.env))) {
     res.setHeader('X-Nebula-Commercial-State', 'release-held');
     return res.redirect(303, '/offers?status=qualification_required');
   }
