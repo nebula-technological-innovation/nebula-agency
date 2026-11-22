@@ -11,7 +11,7 @@ export async function onRequestGet({ request, env }) {
     status: 404,
     headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }
   });
-  if (!commercialRedirectApproved(offer, destination, env)) {
+  if (!(await commercialRedirectApproved(offer, destination, env))) {
     const fallback = new URL('/offers?status=qualification_required', url);
     return new Response(null, { status: 303, headers: {
       Location: fallback.toString(), 'Cache-Control': 'no-store',
