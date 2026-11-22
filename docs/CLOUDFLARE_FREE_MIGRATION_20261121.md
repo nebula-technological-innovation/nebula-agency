@@ -27,7 +27,7 @@ Independent HTTP probes: `/`, `/offers`, `/contact`, and `/landing-pages/service
 
 1. The mapping of 16 Stripe URLs in `api/_offer-catalog.mjs` is not an authorization to take payment.
 2. The primary Nebula live Stripe account had **zero active payment links** during the November 21 check.
-3. `api/_commercial-release.mjs` requires the explicit `NEBULA_COMMERCIAL_RELEASE_MODE=approved` flag and exact owner-approved per-offer manifest with seven evidence references; unset by default.
+3. `api/_commercial-release.mjs` now requires a **version-2 HMAC-signed manifest** plus explicit release mode, exact Stripe seller account, unexpired owner approval and seven evidence references. Details: [`SIGNED_COMMERCIAL_RELEASE_20261121.md`](SIGNED_COMMERCIAL_RELEASE_20261121.md). No signing secret or approved manifest was provisioned; default state is HOLD.
 4. A manifest is a policy pointer, not independently verified payment proof. Before enabling, check provider account identity, product, price, legal terms, signed ingress, order persistence/idempotency, fulfillment, refunds/reversals, settlement and explicit owner sign-off.
 5. Do not auto-publish the existing inactive links, activate subscriptions, or make assumptions from a test redirect.
 6. Qualifying consulting inquiry may be collected via known business email without taking payment.
@@ -44,3 +44,12 @@ Independent HTTP probes: `/`, `/offers`, `/contact`, and `/landing-pages/service
 - Migrate to commercially eligible hosting; verify customer-facing route status, email delivery, analytics and no sale/no delivery side effects.
 
 No canonical DNS, Stripe, Shopify, GitHub main branch, or production customer entitlement was modified by this review work.
+
+## Expanded source-pinned live review (2026-11-21)
+
+- Deterministic 30-route Cloudflare Worker build implemented in `scripts/build-cloudflare-review.mjs`, covering homepage, offers, full service/digital-kit catalogs, all nine individual kit pages, nine guides, and seven service pages. The script allowlists public HTML only; it does not expose `api/`, `supabase/`, GitHub configuration or secrets. The build rejects direct checkout links and unverified availability claims.
+- Source marketing cleanup removed direct Stripe links and `/api/go` purchase links from catalog/service/kit/guide pages, eliminated unverified InStock schema, and made requests qualification-first. New regression `tests/verify-public-release-copy.mjs` scans the entire marketing source tree. No claim of a live customer order or paid delivery.
+- A one-time exact-source public review snapshot for the 30 files is preserved on the separate `review/cloudflare-pages-exact-snapshot-20261121` branch, with a partial compiled source bundle at `review-artifacts/cloudflare-preview-snapshot-part-a.json` and immutable content blob SHA entries. This source-snapshot branch is not intended for merge.
+- Actual Cloudflare direct-upload deployment `8fc0f0e3-8e54-4699-aacb-850d2f0bf03a` at `https://nebula-agency-cloudflare-review.pages.dev/` uses the 30 source page contents and the same reviewed preview-only request handler. Independent HTTP probes: root, offers, revenue catalog, operator kit index and details, service pages, guides and guide detail all returned HTTP 200; unknown path 404; `/api/go?offer=atlas-assessment` responded HTTP 303 back to qualification. Tested responses retain noindex, CSP and HSTS. No branded DNS or live checkout changed.
+- GitHub Actions run [44973853013](https://github.com/nebula-technological-innovation/nebula-agency/actions/runs/44973853013) passed all five checks including the full 30-route offline Worker simulation. A subsequent signed-release policy change passed [run 44974108813](https://github.com/nebula-technological-innovation/nebula-agency/actions/runs/44974108813). These are source/preview tests, not legal, provider, browser-device or settlement certification.
+- Remaining before branded commercial migration: owner-approved legal/corporate copy and policies, complete authoritative DNS snapshot/rollback, production web route and email validation, reliable repeatable Cloudflare deployment authorization, mobile and accessibility QA and verified opt-in lead delivery. The actual `nebularoe.com` production site remains unchanged.
