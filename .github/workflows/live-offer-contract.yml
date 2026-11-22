@@ -1,20 +1,24 @@
-name: Live Offer Contract
+name: Offer Mapping and Commercial Release Gates
 
 on:
   pull_request:
     paths:
-      - 'api/go.js'
+      - 'api/**'
+      - 'functions/api/**'
       - 'index.html'
-      - 'landing-pages/operator-kits.html'
+      - 'landing-pages/**'
       - 'tests/verify-live-offers.mjs'
+      - 'tests/verify-commercial-release-gate.mjs'
       - '.github/workflows/live-offer-contract.yml'
   push:
     branches: [main]
     paths:
-      - 'api/go.js'
+      - 'api/**'
+      - 'functions/api/**'
       - 'index.html'
-      - 'landing-pages/operator-kits.html'
+      - 'landing-pages/**'
       - 'tests/verify-live-offers.mjs'
+      - 'tests/verify-commercial-release-gate.mjs'
       - '.github/workflows/live-offer-contract.yml'
   workflow_dispatch:
 
@@ -24,8 +28,10 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - name: Verify all 15 live offer routes
+      - name: Verify catalog mapping (not sale eligibility)
         run: node tests/verify-live-offers.mjs
+      - name: Verify fail-closed commercial release policy
+        run: node tests/verify-commercial-release-gate.mjs
