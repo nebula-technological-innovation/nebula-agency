@@ -1,4 +1,6 @@
 import crypto from 'node:crypto';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 
 function timingSafeEqualHex(a, b) {
   try {
@@ -32,6 +34,30 @@ async function readRawBody(req) {
   return Buffer.concat(chunks).toString('utf8');
 }
 
+const seen = new Set();
+
+async function persistEvent(record) {
+  const remote = process.env.ORDERS_WEBHOOK_URL;
+  if (remote) {
+    const res = await fetch(remote, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: process.env.ORDERS_WEBHOOK_TOKEN ? `Bearer ${process.env.ORDERS_WEBHOOK_TOKEN}` : '',
+      },
+      body: JSON.stringify(record),
+    });
+    if (!res.ok) throw new Error(`orders_webhook_${res.status}`);
+    return { store: 'orders_webhook' };
+  }
+
+  const dir = process.env.ORDERS_LOG_DIR || '/tmp/nebula-agency-orders';
+  await fs.mkdir(dir, { recursive: true });
+  const file = path.join(dir, 'events.jsonl');
+  await fs.appendFile(file, `${JSON.stringify(record)}\n`, 'utf8');
+  return { store: 'jsonl', file };
+}
+
 export const config = { api: { bodyParser: false } };
 
 export default async function handler(req, res) {
@@ -39,8 +65,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'method_not_allowed' });
 
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
-  const databaseConfigured = Boolean(process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.SUPABASE_URL || process.env.NEON_DATABASE_URL);
-  if (!secret || !databaseConfigured) {
+  if (!secret) {
     return res.status(503).json({ error: 'fulfillment_not_configured' });
   }
 
@@ -51,7 +76,11 @@ export default async function handler(req, res) {
   }
 
   let event;
-  try { event = JSON.parse(rawBody); } catch { return res.status(400).json({ error: 'invalid_json' }); }
+  try {
+    event = JSON.parse(rawBody);
+  } catch {
+    return res.status(400).json({ error: 'invalid_json' });
+  }
 
   const supported = new Set(['checkout.session.completed', 'checkout.session.async_payment_succeeded']);
   if (!supported.has(event.type)) return res.status(200).json({ received: true, fulfillment: 'not_applicable' });
@@ -59,6 +88,38 @@ export default async function handler(req, res) {
   const session = event?.data?.object || {};
   if (session.payment_status !== 'paid') return res.status(200).json({ received: true, fulfillment: 'unpaid_ignored' });
 
-  // Fail closed until the durable order repository adapter is configured.
-  return res.status(503).json({ received: true, verified: true, error: 'durable_order_repository_not_ready' });
+  const eventId = String(event.id || '');
+  if (eventId && seen.has(eventId)) {
+    return res.status(200).json({ received: true, fulfillment: 'duplicate' });
+  }
+
+  const record = {
+    schema: 'nebula.agency.order-event/v1',
+    id: eventId,
+    type: event.type,
+    session_id: session.id || null,
+    customer_email: session.customer_details?.email || session.customer_email || null,
+    amount_total: session.amount_total ?? null,
+    currency: session.currency || null,
+    payment_status: session.payment_status,
+    received_at: new Date().toISOString(),
+  };
+
+  try {
+    const persist = await persistEvent(record);
+    if (eventId) seen.add(eventId);
+    return res.status(200).json({
+      received: true,
+      verified: true,
+      fulfillment: 'accepted',
+      store: persist.store,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      received: true,
+      verified: true,
+      error: 'persist_failed',
+      detail: error instanceof Error ? error.message : 'unknown',
+    });
+  }
 }
