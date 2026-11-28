@@ -30,6 +30,13 @@ export async function forwardCanonicalEntitlement(
   payload: Record<string, unknown>,
   fetchImpl: FetchLike = fetch,
 ): Promise<Record<string, unknown>> {
+  // Never dispatch an event without a stable provider identity: downstream retries
+  // must share an idempotency key to prevent duplicate fulfillment.
+  const eventId = payload.event_id;
+  if (typeof eventId !== "string" || !eventId.trim()) {
+    throw new CanonicalForwardError("canonical_entitlement_forward_failed");
+  }
+
   const [baseUrl, token] = await Promise.all([
     runtimeSecret(admin, "canonical_entitlement_service_url"),
     runtimeSecret(admin, "canonical_entitlement_event_token"),
@@ -54,7 +61,7 @@ export async function forwardCanonicalEntitlement(
     headers: {
       "content-type": "application/json",
       "x-internal-token": token,
-      "idempotency-key": String(payload.event_id ?? ""),
+      "idempotency-key": eventId,
     },
     body: JSON.stringify(payload),
   });
@@ -63,7 +70,33 @@ export async function forwardCanonicalEntitlement(
   }
 
   const contentType = response.headers.get("content-type") ?? "";
-  if (!contentType.includes("application/json")) return { status: "accepted" };
+  // A reverse proxy's HTML 200 or empty response is not durable acknowledgment.
+  if (!contentType.includes("application/json"))
+    throw new CanonicalForwardError("canonical_entitlement_forward_failed", response.status);
   const body = await response.json();
-  return body && typeof body === "object" ? body as Record<string, unknown> : { status: "accepted" };
+  if (body && typeof body === "object" && !Array.isArray(body)) {
+    const result = body as Record<string, unknown>;
+    // A 2xx HTTP status is not proof of canonical fulfillment. Certain
+    // integrations acknowledge transport while reporting a rejected event.
+    const statuses = [result.status, result.canonical_status]
+      .filter((value): value is string => typeof value === "string")
+      .map((value) => value.toLowerCase());
+    if (result.ok === false || result.success === false ||
+        result.error != null || statuses.some((status) =>
+          ["not_configured", "failed", "error", "rejected",
+            "pending_review", "unauthorized", "ignored", "not_applicable"]
+              .includes(status))) {
+      throw new CanonicalForwardError("canonical_entitlement_forward_failed", response.status);
+    }
+    // The canonical entitlement API confirms durable economic processing with
+    // an order id, matching event id and one of two terminal acceptance states.
+    // A generic HTTP 200/{} must not suppress Stripe retry delivery.
+    if (!(["processed", "duplicate"].includes(String(result.status)) &&
+          result.event_id === eventId && Number.isSafeInteger(result.order_id) &&
+          Number(result.order_id) > 0)) {
+      throw new CanonicalForwardError("canonical_entitlement_forward_failed", response.status);
+    }
+    return result;
+  }
+  throw new CanonicalForwardError("canonical_entitlement_forward_failed", response.status);
 }

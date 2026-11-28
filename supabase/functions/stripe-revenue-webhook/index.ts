@@ -21,7 +21,15 @@ const SERVICE_OFFERS = new Set([
   "automation_integration_sprint_deposit",
   "automation_integration_sprint",
   "strategy_architecture_discovery",
+  "ai-task-sprint",
+  "ai-native-website-launch-sprint",
 ]);
+
+// Preserve the legacy checkout identifier accepted by deployed v11.
+const OFFER_ALIASES: Record<string, string> = {
+  "ai_native_website_launch_sprint": "ai-native-website-launch-sprint",
+};
+const canonicalOffer = (value: string): string => OFFER_ALIASES[value] ?? value;
 
 const DIGITAL_OFFERS = new Set([
   "ai-automation-starter-kit",
@@ -77,9 +85,14 @@ async function verifyStripeSignature(raw: string, header: string | null, secret:
   const timestampPart = parts.find((p) => p.startsWith("t="));
   const signatures = parts.filter((p) => p.startsWith("v1=")).map((p) => p.slice(3));
   if (!timestampPart || signatures.length === 0) return false;
-  const timestamp = Number(timestampPart.slice(2));
-  if (!Number.isFinite(timestamp) || Math.abs(Math.floor(Date.now() / 1000) - timestamp) > 300) return false;
-  const expected = await hmacSha256Hex(secret, `${timestamp}.${raw}`);
+  // Stripe timestamps are decimal integer seconds, not JS numeric expressions or fractions.
+  const rawTimestamp = timestampPart.slice(2);
+  if (!/^[0-9]{1,12}$/.test(rawTimestamp)) return false;
+  const timestamp = Number(rawTimestamp);
+  if (!Number.isSafeInteger(timestamp) || Math.abs(Math.floor(Date.now() / 1000) - timestamp) > 300) return false;
+  // Refuse malformed/truncated hex instead of relying on permissive conversion.
+  if (signatures.some((signature) => !/^[0-9a-f]{64}$/i.test(signature))) return false;
+  const expected = await hmacSha256Hex(secret, `${rawTimestamp}.${raw}`);
   return signatures.some((sig) => constantTimeEqualHex(sig, expected));
 }
 
@@ -189,10 +202,21 @@ Deno.serve(async (req: Request) => {
     }
 
     const metadata = session.metadata ?? {};
-    const offer = String(metadata.offer ?? "").trim();
-    const sku = String(metadata.sku ?? metadata.product_id ?? "").trim();
-    const offerId = offer || sku || "unknown";
-    const kind = SERVICE_OFFERS.has(offer) ? "service" : DIGITAL_OFFERS.has(sku) ? "digital" : "unknown";
+    // Prefer verified checkout/offer identities without creating authority from an unknown SKU.
+    const offer = canonicalOffer(String(
+      metadata.commercial_offer_id ?? metadata.offer_id ?? metadata.offer ?? metadata.nebula_offer_id ?? "",
+    ).trim());
+    const sku = canonicalOffer(String(metadata.sku ?? metadata.product_id ?? "").trim());
+    const kind = SERVICE_OFFERS.has(offer) || SERVICE_OFFERS.has(sku)
+      ? "service"
+      : DIGITAL_OFFERS.has(sku) || DIGITAL_OFFERS.has(offer)
+        ? "digital"
+        : "unknown";
+    const offerId = kind === "service"
+      ? SERVICE_OFFERS.has(offer) ? offer : sku
+      : kind === "digital"
+        ? DIGITAL_OFFERS.has(sku) ? sku : offer
+        : offer || sku || "unknown";
     const fulfillmentStatus = kind === "service"
       ? "intake_required"
       : kind === "digital"
@@ -212,9 +236,20 @@ Deno.serve(async (req: Request) => {
       "mode",
       "payment_stage",
       "business_unit",
+      "business_owner",
+      "commercial_offering_id",
+      "commercial_offer_id",
+      "canonical_price_id",
+      "entitlement_tier",
+      "provider_price_id",
+      "payment_role",
+      "fulfillment",
+      "fulfillment_type",
     ]) {
       if (metadata[key] != null) safeMetadata[key] = metadata[key];
     }
+    // Match the deployed v11 canonical economic identity on replay and audit.
+    safeMetadata.canonical_offer_id = offerId;
 
     const intakePayload: Record<string, unknown> = {};
     if (kind === "service" && Array.isArray(session.custom_fields)) {
@@ -251,9 +286,54 @@ Deno.serve(async (req: Request) => {
     }
 
     const row = recorded[0] as { fulfillment_status?: string; duplicate?: boolean };
+    // Persist first, then acknowledge only when canonical paid-event delivery succeeds.
+    // Retries converge on record_revenue_checkout's provider-event idempotency key.
+    if (kind !== "unknown") {
+      if (!email) {
+        return json(503, { error: "customer_email_unresolved", retryable: true });
+      }
+      if (amountTotal === null || currency === null) {
+        return json(503, { error: "payment_amount_or_currency_unresolved", retryable: true });
+      }
+      const paymentIntentId = stringId(session.payment_intent);
+      const subscriptionId = stringId(session.subscription);
+      if (!paymentIntentId && !subscriptionId) {
+        return json(503, { error: "payment_identity_unresolved", retryable: true });
+      }
+      try {
+        await forwardCanonicalEntitlement(admin, "/internal/payment-events", {
+          event_id: event.id,
+          event_type: eventType,
+          paid: true,
+          customer_email: email,
+          product_id: offerId,
+          product_name: String(metadata.product_name ?? offerId),
+          tier: String(metadata.entitlement_tier ?? (kind === "service" ? "service" : "digital")),
+          fulfillment_type: kind === "service" ? "professional_service" : "digital_delivery",
+          amount: amountTotal,
+          currency,
+          payment_intent_id: paymentIntentId,
+          subscription_id: subscriptionId,
+          checkout_session_id: session.id,
+          needs_license_key: false,
+          needs_api_key: false,
+          commercial_offering_id: metadata.commercial_offering_id ?? null,
+          commercial_offer_id: offerId,
+          canonical_price_id: metadata.canonical_price_id ?? null,
+          entitlement_tier: metadata.entitlement_tier ?? null,
+          payment_provider: "stripe",
+          provider_price_id: metadata.provider_price_id ?? null,
+        });
+      } catch (error) {
+        return canonicalForwardFailure(error);
+      }
+    }
+
     return json(200, {
       received: true,
       verified: true,
+      canonical_forwarding: kind !== "unknown",
+      canonical_status: kind === "unknown" ? "pending_review" : "forwarded",
       offer_id: offerId,
       fulfillment_status: row.fulfillment_status ?? fulfillmentStatus,
       duplicate: Boolean(row.duplicate),
@@ -263,19 +343,23 @@ Deno.serve(async (req: Request) => {
   if (eventType === "invoice.paid") {
     const subscriptionId = subscriptionIdFromInvoice(eventObject);
     const identity = softwareIdentityFromInvoice(eventObject);
-    if (!subscriptionId || !identity) return json(200, { received: true, status: "software_identity_unresolved" });
+    // Invoices with no Nebula product identity cannot grant access.
+    if (!identity) return json(200, { received: true, status: "non_nebula_invoice_ignored" });
+    // Once a Nebula product is identified, do not permanently acknowledge
+    // missing source/customer/payment identities. Stripe must be able to retry.
+    if (!subscriptionId) return json(503, { error: "subscription_identity_unresolved", retryable: true });
+    if (typeof event.id !== "string" || !event.id) return json(400, { error: "missing_provider_identity" });
 
     const email = String(eventObject.customer_email ?? "").trim().toLowerCase();
-    if (!email) return json(200, { received: true, status: "customer_email_unresolved" });
+    if (!email) return json(503, { error: "customer_email_unresolved", retryable: true });
 
     const amount = Number.isSafeInteger(eventObject.amount_paid) && eventObject.amount_paid >= 0
-      ? eventObject.amount_paid
-      : Number.isSafeInteger(eventObject.total) && eventObject.total >= 0
-        ? eventObject.total
-        : 0;
+      ? eventObject.amount_paid : null;
     const currency = typeof eventObject.currency === "string" && /^[a-z]{3}$/i.test(eventObject.currency)
-      ? eventObject.currency.toLowerCase()
-      : "usd";
+      ? eventObject.currency.toLowerCase() : null;
+    if (amount === null || currency === null) {
+      return json(503, { error: "invoice_payment_amount_or_currency_unresolved", retryable: true });
+    }
     const needsApiKey = identity.fulfillment === "api_key" || identity.sku.includes("api");
 
     try {
